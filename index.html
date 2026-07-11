@@ -1,0 +1,2582 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<title>Perfect Council — Perfect University</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Perfect Council glass — asosiy palitra */
+    --bg-1:#FAF7EF;
+    --bg-2:#F5EFDE;
+    --bg-3:#EFE6CC;
+    --bg-4:#E4D6A8;
+    --paper:#EEF3F8;
+    --card:rgba(255,255,255,0.66);
+    --card-solid:#FFFFFF;
+    --ink:#16232F;
+    --ink-soft:#5C7186;
+    --navy:#2C4A6A;
+    --navy-deep:#132339;
+    --navy-soft:#3F6288;
+    --gold:#B8862E;
+    --gold-bg:rgba(184,134,46,0.16);
+    --brick:#BE3B2B;
+    --brick-bg:rgba(190,59,43,0.14);
+    --forest:#227A50;
+    --forest-bg:rgba(34,122,80,0.14);
+    --amber:#B9791C;
+    --amber-bg:rgba(185,121,28,0.16);
+    --line:rgba(19,35,57,0.13);
+    --line-soft:rgba(19,35,57,0.08);
+    --glass-border:rgba(255,255,255,0.55);
+    --blur:18px;
+    --radius:16px;
+    --shadow-glass:0 10px 32px rgba(15,28,45,0.14), 0 2px 8px rgba(15,28,45,0.06);
+    --shadow-glass-lg:0 18px 48px rgba(15,28,45,0.20);
+    --font-display:'Manrope',sans-serif;
+    --font-body:'Inter',sans-serif;
+    --font-mono:'JetBrains Mono',monospace;
+    --dur:.18s;
+  }
+  [data-theme="dark"]{
+    --bg-1:#050C15;
+    --bg-2:#0D1E30;
+    --bg-3:#14293C;
+    --bg-4:#1E3F4E;
+    --paper:#0D1826;
+    --card:rgba(22,35,52,0.60);
+    --card-solid:#16232F;
+    --ink:#E8EFF6;
+    --ink-soft:#93A8BE;
+    --navy:#4778A0;
+    --navy-deep:#0A1420;
+    --navy-soft:#5C8CB2;
+    --gold:#E0B84E;
+    --gold-bg:rgba(224,184,78,0.16);
+    --brick:#E17364;
+    --brick-bg:rgba(225,115,100,0.16);
+    --forest:#4FC189;
+    --forest-bg:rgba(79,193,137,0.16);
+    --amber:#E0A83E;
+    --amber-bg:rgba(224,168,62,0.18);
+    --line:rgba(255,255,255,0.13);
+    --line-soft:rgba(255,255,255,0.07);
+    --glass-border:rgba(255,255,255,0.14);
+    --shadow-glass:0 10px 32px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.2);
+    --shadow-glass-lg:0 18px 48px rgba(0,0,0,0.45);
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms !important;transition-duration:.001ms !important;}
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;font-family:var(--font-body);color:var(--ink);min-height:100vh;
+    background:
+      radial-gradient(circle at 12% 15%, rgba(62,122,140,.30), transparent 42%),
+      radial-gradient(circle at 88% 78%, rgba(184,134,46,.16), transparent 40%),
+      linear-gradient(135deg, var(--bg-1), var(--bg-3) 55%, var(--bg-4));
+    background-attachment:fixed;
+    transition:background .35s ease, color .25s ease;
+  }
+  ::selection{background:var(--gold);color:#fff;}
+  :focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px;}
+
+  /* Ambient brand-mark orbs (signature) */
+  .bg-orbs{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;}
+  .brand-orb{position:absolute;filter:blur(70px);}
+  .brand-orb-1{width:560px;height:560px;top:-180px;right:-140px;color:var(--bg-4);opacity:.4;}
+  .brand-orb-2{width:460px;height:460px;bottom:-160px;left:-120px;color:var(--gold);opacity:.16;transform:rotate(180deg);}
+
+  .app{display:flex;min-height:100vh;position:relative;z-index:1;gap:18px;padding:18px;}
+
+  /* Sidebar (floating glass) */
+  .sidebar{width:230px;flex-shrink:0;background:rgba(11,27,46,.55);backdrop-filter:blur(var(--blur));-webkit-backdrop-filter:blur(var(--blur));border:1px solid rgba(255,255,255,.10);border-radius:var(--radius);color:#EDF2F7;display:flex;flex-direction:column;padding:26px 18px;box-shadow:var(--shadow-glass);height:calc(100vh - 36px);position:sticky;top:18px;}
+  .brand-row{display:flex;align-items:center;gap:10px;margin-bottom:2px;}
+  .brand-mark{width:26px;height:26px;flex-shrink:0;}
+  .brand{font-family:var(--font-display);font-weight:800;font-size:18px;letter-spacing:.2px;line-height:1.15;}
+  .brand-sub{font-size:10.5px;color:#8CA3BC;letter-spacing:1.2px;text-transform:uppercase;margin:6px 0 30px;padding-left:36px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:11px;font-size:13.5px;font-weight:500;cursor:pointer;color:#AFC0D4;margin-bottom:3px;transition:background var(--dur),color var(--dur),transform var(--dur);}
+  .nav-item:hover{background:rgba(255,255,255,.08);color:#fff;transform:translateX(2px);}
+  .nav-item.active{background:linear-gradient(135deg, var(--navy-soft), var(--navy));color:#fff;font-weight:600;box-shadow:0 4px 14px rgba(0,0,0,.25);}
+  .nav-parent{justify-content:space-between;}
+  .nav-chevron{font-size:11px;transition:transform .2s;flex-shrink:0;}
+  .nav-chevron.open{transform:rotate(180deg);}
+  .nav-submenu{padding-left:14px;margin-bottom:3px;}
+  .nav-subitem{font-size:12.5px;}
+  .sidebar-footer{margin-top:auto;font-size:10.5px;color:#6F84A0;line-height:1.5;border-top:1px solid rgba(255,255,255,.10);padding-top:14px;}
+  #logout-link{transition:color var(--dur);}
+  #logout-link:hover{color:#fff;}
+  #theme-toggle{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:11px;font-size:12.5px;color:#AFC0D4;cursor:pointer;background:rgba(255,255,255,.06);margin-bottom:14px;transition:background var(--dur);border:1px solid rgba(255,255,255,.08);}
+  #theme-toggle:hover{background:rgba(255,255,255,.12);}
+
+  /* Main */
+  .main{flex:1;max-width:1560px;min-width:0;display:flex;flex-direction:column;gap:18px;}
+  .topbar{display:flex;align-items:center;justify-content:flex-end;gap:8px;background:var(--card);backdrop-filter:blur(var(--blur));-webkit-backdrop-filter:blur(var(--blur));border:1px solid var(--glass-border);border-radius:14px;padding:10px 14px;box-shadow:var(--shadow-glass);}
+  .topbar-btn{display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:9px;border:1px solid var(--line);background:rgba(255,255,255,.4);color:var(--ink-soft);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-body);transition:all var(--dur);white-space:nowrap;}
+  [data-theme="dark"] .topbar-btn{background:rgba(255,255,255,.05);}
+  .topbar-btn:hover{background:var(--navy);color:#fff;border-color:var(--navy);transform:translateY(-1px);}
+  .topbar-btn.icon-only{padding:8px 10px;}
+
+  /* Profil menyusi (topbar, o'ng burchak) */
+  .profile-menu{position:relative;margin-left:auto;}
+  .profile-trigger{display:flex;align-items:center;gap:10px;padding:5px 8px 5px 14px;border-radius:11px;border:1px solid var(--line);background:rgba(255,255,255,.4);cursor:pointer;font-family:var(--font-body);transition:all var(--dur);}
+  [data-theme="dark"] .profile-trigger{background:rgba(255,255,255,.05);}
+  .profile-trigger:hover{border-color:var(--navy-soft);box-shadow:0 4px 12px rgba(44,74,106,.15);}
+  .profile-trigger-text{text-align:right;line-height:1.35;}
+  .profile-trigger-title{font-size:11px;font-weight:800;letter-spacing:.4px;color:var(--navy-deep);font-family:var(--font-display);}
+  [data-theme="dark"] .profile-trigger-title{color:var(--ink);}
+  .profile-trigger-sub{font-size:11px;color:var(--forest);font-weight:600;}
+  .profile-avatar{width:30px;height:30px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg, var(--navy-soft), var(--navy-deep));display:flex;align-items:center;justify-content:center;}
+  .profile-dropdown{position:absolute;top:calc(100% + 8px);right:0;min-width:215px;background:var(--card-solid);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow-glass-lg);padding:6px;z-index:120;animation:toastIn .18s ease;}
+  .profile-dropdown.hidden{display:none;}
+  .profile-dropdown-item{display:flex;align-items:center;gap:10px;width:100%;padding:9px 10px;border:none;background:none;border-radius:8px;font-family:var(--font-body);font-size:13px;color:var(--ink);cursor:pointer;text-align:left;transition:background var(--dur);}
+  .profile-dropdown-item:hover{background:var(--line-soft);}
+  .profile-dropdown-icon{font-size:14px;width:16px;text-align:center;flex-shrink:0;}
+  .profile-dropdown-item.danger{color:var(--brick);}
+  .profile-dropdown-item.danger:hover{background:var(--brick-bg);}
+  .profile-dropdown-divider{height:1px;background:var(--line);margin:4px 2px;}
+  @media (max-width:520px){
+    .profile-trigger-text{display:none;}
+    .profile-trigger{padding:6px;}
+  }
+
+  .main-scroll{flex:1;overflow-y:auto;padding-right:2px;}
+  .page-title{font-family:var(--font-display);font-size:25px;font-weight:800;margin:0 0 4px;letter-spacing:-.2px;}
+  .page-sub{color:var(--ink-soft);font-size:13px;margin:0 0 22px;}
+
+  /* Stats strip */
+  .stats{display:grid;grid-template-columns:repeat(7,1fr);gap:14px;margin-bottom:22px;}
+  .stat{background:var(--card);backdrop-filter:blur(var(--blur));-webkit-backdrop-filter:blur(var(--blur));border:1px solid var(--glass-border);border-radius:14px;padding:16px 18px;position:relative;overflow:hidden;box-shadow:var(--shadow-glass);transition:transform var(--dur),box-shadow var(--dur);animation:riseIn .4s ease backwards;}
+  .stat:hover{transform:translateY(-3px);box-shadow:var(--shadow-glass-lg);}
+  .stat-click{cursor:pointer;}
+  .stat::after{content:"";position:absolute;top:-16px;right:-16px;width:46px;height:46px;border-radius:50%;background:conic-gradient(from 180deg, var(--navy) 90deg, transparent 90deg);opacity:.10;}
+  .stat-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.6px;color:var(--ink-soft);margin-bottom:8px;font-weight:600;}
+  .stat-value{font-family:var(--font-mono);font-size:22px;font-weight:600;}
+  .stat-value.brick{color:var(--brick);}
+  .stat-value.forest{color:var(--forest);}
+  .stat-value.amber{color:var(--amber);}
+  .stat-value.slate-text{color:var(--ink-soft);}
+
+  @keyframes riseIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+  .stat:nth-child(1){animation-delay:.02s;} .stat:nth-child(2){animation-delay:.06s;}
+  .stat:nth-child(3){animation-delay:.10s;} .stat:nth-child(4){animation-delay:.14s;}
+  .stat:nth-child(5){animation-delay:.18s;} .stat:nth-child(6){animation-delay:.22s;}
+
+  /* Toolbar */
+  .toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+  .search{flex:1;min-width:180px;position:relative;}
+  .search input{width:100%;padding:10px 12px 10px 34px;border:1px solid var(--line);border-radius:10px;background:var(--card);backdrop-filter:blur(var(--blur));-webkit-backdrop-filter:blur(var(--blur));font-size:13px;font-family:var(--font-body);color:var(--ink);transition:border-color var(--dur),box-shadow var(--dur);}
+  .search input::placeholder{color:var(--ink-soft);}
+  .search input:focus{outline:none;border-color:var(--navy-soft);box-shadow:0 0 0 3px rgba(44,74,106,.15);}
+  .search-icon{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-soft);font-size:13px;}
+  .sort-select{padding:9px 30px 9px 12px;border-radius:10px;border:1px solid var(--line);background:var(--card);font-size:12.5px;font-family:var(--font-body);color:var(--ink);cursor:pointer;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0 L5 6 L10 0 Z' fill='%235C7186'/></svg>");background-repeat:no-repeat;background-position:right 11px center;}
+  .filters{display:flex;gap:6px;flex-wrap:wrap;}
+  .filter-btn{padding:8px 14px;border-radius:9px;border:1px solid var(--line);background:var(--card);font-size:12.5px;font-family:var(--font-body);cursor:pointer;color:var(--ink-soft);white-space:nowrap;transition:all var(--dur);}
+  .filter-btn:hover{border-color:var(--navy-soft);color:var(--navy);}
+  .filter-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);box-shadow:0 4px 12px rgba(44,74,106,.3);}
+  .btn-primary{padding:10px 16px;border-radius:10px;border:none;background:linear-gradient(135deg, var(--navy-soft), var(--navy));color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-body);white-space:nowrap;transition:transform var(--dur),box-shadow var(--dur);box-shadow:0 4px 14px rgba(44,74,106,.3);}
+  .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(44,74,106,.4);}
+
+  /* Table */
+  .table-wrap{background:var(--card);backdrop-filter:blur(var(--blur));-webkit-backdrop-filter:blur(var(--blur));border:1px solid var(--glass-border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-glass);}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--ink-soft);font-weight:700;padding:13px 14px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.25);}
+  [data-theme="dark"] th{background:rgba(255,255,255,.03);}
+  td{padding:13px 14px;border-bottom:1px solid var(--line-soft);vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  tr.row{transition:background var(--dur);}
+  tr.row:hover{background:rgba(255,255,255,.35);}
+  [data-theme="dark"] tr.row:hover{background:rgba(255,255,255,.04);}
+  #table-body tr.row{cursor:default;}
+  .name-cell{font-weight:600;}
+  .sub-cell{color:var(--ink-soft);font-size:12px;margin-top:2px;}
+  .mono{font-family:var(--font-mono);}
+  .stamp{display:inline-block;padding:4px 10px;border-radius:20px;font-size:10.5px;font-weight:600;letter-spacing:.3px;text-transform:uppercase;border:1px solid;}
+  .stamp.brick{color:var(--brick);background:var(--brick-bg);border-color:transparent;}
+  .stamp.amber{color:var(--amber);background:var(--amber-bg);border-color:transparent;}
+  .stamp.forest{color:var(--forest);background:var(--forest-bg);border-color:transparent;}
+  .stamp.slate{color:var(--ink-soft);background:rgba(92,113,134,.12);border-color:transparent;}
+  .progress-bar{width:80px;height:6px;background:var(--line-soft);border-radius:3px;overflow:hidden;}
+  .progress-fill{height:100%;background:linear-gradient(90deg, var(--forest), #3FBE7E);border-radius:3px;transition:width .4s ease;}
+  .empty{padding:60px 20px;text-align:center;color:var(--ink-soft);font-size:13px;}
+  .row-actions{opacity:0;transition:opacity var(--dur);}
+  tr.row:hover .row-actions{opacity:1;}
+  .icon-btn{background:none;border:none;cursor:pointer;color:var(--ink-soft);font-size:13px;padding:5px 7px;border-radius:7px;transition:all var(--dur);}
+  .icon-btn:hover{color:var(--brick);background:var(--brick-bg);}
+  .icon-btn.edit-btn:hover{color:var(--navy);background:rgba(44,74,106,.12);}
+  .icon-btn.receipt-btn:hover{color:var(--gold);background:var(--gold-bg);}
+  .row-num{color:var(--ink-soft);font-family:var(--font-mono);font-size:12px;}
+
+  /* Modal / Drawer */
+  .overlay{position:fixed;inset:0;background:rgba(8,16,28,.45);backdrop-filter:blur(4px);display:flex;justify-content:flex-end;z-index:50;animation:fadeIn .2s ease;}
+  .overlay.hidden{display:none;}
+  @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+  .drawer{width:430px;max-width:92vw;background:var(--card-solid);height:100%;overflow:hidden;padding:0;box-shadow:-8px 0 32px rgba(0,0,0,.25);animation:slideIn .28s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;position:relative;}
+  .drawer-scroll{flex:1;min-height:0;overflow-y:auto;padding:28px 26px 12px;}
+  @keyframes slideIn{from{transform:translateX(30px);opacity:.4;}to{transform:translateX(0);opacity:1;}}
+  .drawer h2{font-family:var(--font-display);font-size:19px;font-weight:800;margin:0 0 20px;}
+  .field{margin-bottom:14px;}
+  .field label{display:block;font-size:11.5px;color:var(--ink-soft);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.3px;}
+  .field input, .field textarea, .field select{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:9px;font-family:var(--font-body);font-size:13.5px;background:var(--paper);color:var(--ink);transition:border-color var(--dur),box-shadow var(--dur);}
+  .field input:focus, .field textarea:focus, .field select:focus{outline:none;border-color:var(--navy-soft);box-shadow:0 0 0 3px rgba(44,74,106,.14);}
+  .field input:disabled, .field textarea:disabled, .field select:disabled{opacity:.65;cursor:not-allowed;}
+  .field input[type="number"]{appearance:textfield;-moz-appearance:textfield;}
+  .field input[type="number"]::-webkit-outer-spin-button,
+  .field input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+  .field select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0 L5 6 L10 0 Z' fill='%235C7186'/></svg>");background-repeat:no-repeat;background-position:right 12px center;padding-right:30px;}
+  .field textarea{resize:vertical;min-height:60px;}
+  .field-row{display:flex;gap:10px;}
+  .field-row .field{flex:1;}
+  .check-row{display:flex;align-items:center;gap:8px;margin:16px 0;}
+  .divider{border-top:1px solid var(--line);margin:20px 0;}
+  .drawer-actions{display:flex;gap:8px;padding:16px 26px;border-top:1px solid var(--line);background:var(--card-solid);flex-shrink:0;}
+  .btn-secondary{padding:10px 14px;border-radius:10px;border:1px solid var(--line);background:var(--paper);font-size:13px;font-weight:500;cursor:pointer;color:var(--ink);flex:1;font-family:var(--font-body);transition:all var(--dur);}
+  .btn-secondary:hover{border-color:var(--navy-soft);}
+  .btn-danger{padding:10px 14px;border-radius:10px;border:1px solid var(--brick);background:transparent;font-size:13px;cursor:pointer;color:var(--brick);font-family:var(--font-body);transition:all var(--dur);}
+  .btn-danger:hover{background:var(--brick-bg);}
+  .close-x{position:absolute;top:26px;right:26px;background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink-soft);border-radius:8px;padding:4px 8px;transition:background var(--dur);z-index:5;}
+  .close-x:hover{background:var(--line-soft);}
+  .hint{font-size:11.5px;color:var(--ink-soft);margin-top:3px;line-height:1.4;}
+
+  /* Talaba ko'rish oynasi (read-only, bo'limlarga ajratilgan) */
+  .view-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:18px;}
+  .view-header-name{font-family:var(--font-display);font-size:18px;font-weight:800;margin:0 0 8px;line-height:1.3;}
+  .view-header-badges{display:flex;gap:6px;flex-wrap:wrap;}
+  .view-section{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:14px;}
+  .view-section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;}
+  .view-section-head h3{font-family:var(--font-display);font-size:12.5px;font-weight:800;margin:0;color:var(--ink);text-transform:uppercase;letter-spacing:.4px;}
+  .view-edit-btn{padding:5px 12px;border-radius:8px;border:1px solid var(--navy-soft);background:none;color:var(--navy);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font-body);transition:all var(--dur);white-space:nowrap;flex-shrink:0;}
+  [data-theme="dark"] .view-edit-btn{color:var(--navy-soft);}
+  .view-edit-btn:hover{background:var(--navy);border-color:var(--navy);color:#fff;}
+  .view-fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;}
+  .view-field-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-soft);font-weight:600;margin-bottom:4px;}
+  .view-field-value{font-size:13.5px;color:var(--ink);font-weight:500;word-break:break-word;}
+  .view-field-value.empty-val{color:var(--ink-soft);font-weight:400;}
+  .view-notes-box{margin-top:14px;padding-top:14px;border-top:1px solid var(--line-soft);}
+
+  /* Bosh sahifa dashboard */
+  .home-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
+  .home-card{padding:20px 22px;}
+  .card-title{font-family:var(--font-display);font-size:15px;font-weight:700;margin:0 0 16px;}
+  .card-title-sub{font-family:var(--font-body);font-weight:400;font-size:12px;color:var(--ink-soft);}
+  .donut-row{display:flex;align-items:center;gap:24px;}
+  .donut{width:126px;height:126px;border-radius:50%;position:relative;flex-shrink:0;filter:drop-shadow(0 4px 10px rgba(15,28,45,.15));}
+  .donut-svg{position:absolute;inset:0;transform:rotate(-90deg);}
+  .donut-arc{transition:stroke-width .2s ease,opacity .2s ease,filter .2s ease;}
+  .donut-arc-clickable{cursor:pointer;}
+  .donut-arc-clickable:hover{stroke-width:18px;filter:brightness(1.15);}
+  .donut-svg:has(.donut-arc-clickable:hover) .donut-arc-clickable:not(:hover){opacity:.55;}
+  .donut-hole{position:absolute;top:16px;left:16px;width:94px;height:94px;border-radius:50%;background:var(--card-solid);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:color .15s ease;}
+  .donut-total{font-family:var(--font-mono);font-size:20px;font-weight:700;color:var(--ink);transition:color .15s ease;}
+  .donut-total-label{font-size:9.5px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px;margin-top:1px;}
+  .legend{flex:1;min-width:0;}
+  .legend-row{display:flex;align-items:center;gap:8px;font-size:12.5px;margin-bottom:9px;}
+  .legend-row:last-child{margin-bottom:0;}
+  .legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;position:relative;display:inline-flex;align-items:center;justify-content:center;transition:width .22s cubic-bezier(.34,1.56,.64,1),height .22s cubic-bezier(.34,1.56,.64,1);}
+  .legend-dot-value{position:absolute;font-family:var(--font-mono);font-size:0;font-weight:700;color:#fff;opacity:0;transform:scale(.4);transition:opacity .16s ease,transform .16s ease,font-size .16s ease;white-space:nowrap;pointer-events:none;}
+  .legend-label{flex:1;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .legend-value{font-family:var(--font-mono);font-weight:600;color:var(--ink);}
+  .legend-row-v2{margin-bottom:12px;}
+  .legend-row-v2:last-child{margin-bottom:0;}
+  .legend-row-top{display:flex;align-items:center;gap:8px;font-size:12.5px;margin-bottom:5px;}
+  .legend-row-v2.clickable{cursor:pointer;}
+  .legend-row-v2.clickable .legend-row-top{border-radius:8px;padding:4px 6px;margin:-4px -6px 1px;transition:background var(--dur);}
+  .legend-row-v2.clickable:hover .legend-row-top{background:var(--line-soft);}
+  .legend-row-v2.clickable:hover .legend-dot{width:22px;height:22px;}
+  .legend-row-v2.clickable:hover .legend-dot-value{opacity:1;transform:scale(1);font-size:10px;}
+  .legend-pct{color:var(--ink-soft);font-weight:500;}
+  .legend-bar{height:5px;background:var(--line-soft);border-radius:3px;overflow:hidden;}
+  .legend-bar-fill{height:100%;border-radius:3px;transition:width .4s ease;}
+  .mini-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 4px;border-radius:9px;border-bottom:1px solid var(--line-soft);cursor:pointer;transition:background var(--dur);}
+  .mini-row:hover{background:rgba(255,255,255,.4);}
+  [data-theme="dark"] .mini-row:hover{background:rgba(255,255,255,.05);}
+  .mini-row:last-child{border-bottom:none;}
+  .mini-row:hover .name-cell{color:var(--navy);}
+
+  /* Toast */
+  #toast-container{position:fixed;bottom:24px;right:24px;z-index:300;display:flex;flex-direction:column;gap:10px;}
+  .toast{display:flex;align-items:center;gap:10px;padding:13px 18px;border-radius:12px;background:var(--card-solid);border:1px solid var(--line);box-shadow:var(--shadow-glass-lg);font-size:13px;font-weight:500;color:var(--ink);min-width:220px;animation:toastIn .25s cubic-bezier(.2,.8,.2,1);}
+  .toast.success{border-left:4px solid var(--forest);}
+  .toast.error{border-left:4px solid var(--brick);}
+  .toast.info{border-left:4px solid var(--navy);}
+  .toast.leaving{animation:toastOut .2s ease forwards;}
+  @keyframes toastIn{from{opacity:0;transform:translateX(24px);}to{opacity:1;transform:translateX(0);}}
+  @keyframes toastOut{to{opacity:0;transform:translateX(24px);}}
+
+  @media (max-width:820px){
+    .home-grid{grid-template-columns:1fr;}
+    .app{flex-direction:column;padding:10px;gap:10px;}
+    .sidebar{width:100%;flex-direction:row;align-items:center;padding:12px 16px;height:auto;position:relative;top:0;overflow-x:auto;}
+    .brand-sub{display:none;}
+    .sidebar-footer{display:none;}
+    .nav-item{margin-bottom:0;}
+    #theme-toggle{display:none;}
+    .main{padding:0;}
+    .stats{grid-template-columns:repeat(2,1fr);}
+    .topbar{flex-wrap:wrap;}
+  }
+  .lock-screen{position:fixed;inset:0;z-index:200;display:flex;background:#fff;}
+  .lock-left{flex:0 0 42%;max-width:520px;background:linear-gradient(155deg,#0F2647,#1B3D6E 70%);display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:0 60px;gap:26px;position:relative;overflow:hidden;}
+  .lock-left::after{content:"";position:absolute;top:-120px;right:-120px;width:340px;height:340px;border-radius:50%;background:rgba(255,255,255,.05);}
+  .lock-logo-mark{flex-shrink:0;}
+  .lock-left-title{font-family:var(--font-display);font-weight:800;font-size:30px;line-height:1.18;color:#fff;letter-spacing:.5px;}
+  .lock-right{flex:1;display:flex;align-items:center;justify-content:center;background:#fff;}
+  .lock-card{width:360px;max-width:86vw;text-align:center;}
+  .lock-card h2{font-family:var(--font-display);font-size:25px;font-weight:800;margin:0 0 6px;color:#16232F;}
+  .lock-card p{font-size:13px;color:var(--ink-soft);margin:0 0 26px;}
+  .lock-input-wrap{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:10px;padding:0 13px;margin-bottom:14px;background:#fff;transition:border-color var(--dur);}
+  .lock-input-wrap:focus-within{border-color:var(--navy);box-shadow:0 0 0 3px rgba(44,74,106,.12);}
+  .lock-input-wrap svg{flex-shrink:0;color:var(--navy);}
+  .lock-input-wrap input{flex:1;border:none;outline:none;padding:13px 0;font-family:var(--font-body);font-size:14px;color:var(--ink);background:transparent;text-align:left;}
+  .lock-eye{background:none;border:none;cursor:pointer;color:var(--ink-soft);padding:4px;display:flex;flex-shrink:0;}
+  .lock-eye:hover{color:var(--navy);}
+  .lock-card button#lock-submit{width:100%;padding:14px;border:none;border-radius:10px;background:var(--navy-deep);color:#fff;font-size:13.5px;font-weight:700;letter-spacing:.5px;cursor:pointer;font-family:var(--font-body);transition:transform var(--dur),background var(--dur);margin-top:6px;}
+  .lock-card button#lock-submit:hover{background:var(--navy);transform:translateY(-1px);}
+  .lock-error{color:var(--brick);font-size:12px;margin-top:12px;min-height:14px;}
+  @media (max-width:760px){
+    .lock-screen{flex-direction:column;}
+    .lock-left{flex:0 0 auto;max-width:none;padding:36px 30px;flex-direction:row;align-items:center;}
+    .lock-left-title{font-size:19px;}
+    .lock-right{flex:1;padding:30px;}
+  }
+</style>
+</head>
+<body>
+<div class="bg-orbs" aria-hidden="true">
+  <svg class="brand-orb brand-orb-1" viewBox="0 0 26 26"><rect x="2" y="3" width="4" height="20" fill="currentColor"/><rect x="7.5" y="3" width="4" height="12.5" fill="currentColor"/><rect x="13" y="3" width="4.5" height="20" fill="currentColor"/><rect x="19" y="3" width="4" height="20" fill="currentColor"/></svg>
+  <svg class="brand-orb brand-orb-2" viewBox="0 0 26 26"><rect x="2" y="3" width="4" height="20" fill="currentColor"/><rect x="7.5" y="3" width="4" height="12.5" fill="currentColor"/><rect x="13" y="3" width="4.5" height="20" fill="currentColor"/><rect x="19" y="3" width="4" height="20" fill="currentColor"/></svg>
+</div>
+<div id="toast-container" aria-live="polite"></div>
+<input type="file" id="receipt-file-input" accept="image/*" style="display:none;">
+<div class="lock-screen" id="lock-screen">
+  <div class="lock-left">
+    <svg class="lock-logo-mark" viewBox="0 0 26 26" width="56" height="56"><rect x="2" y="3" width="4" height="20" fill="#fff"/><rect x="7.5" y="3" width="4" height="12.5" fill="#fff"/><rect x="13" y="3" width="4.5" height="20" fill="#fff"/><rect x="19" y="3" width="4" height="20" fill="#fff"/></svg>
+    <div class="lock-left-title">TASHKENT<br>PERFECT<br>UNIVERSITY</div>
+  </div>
+  <div class="lock-right">
+    <div class="lock-card">
+      <h2>Tizimga kirish</h2>
+      <p>Kirish uchun pastdagi formani to'ldiring</p>
+      <div class="lock-input-wrap">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v3h16v-3c0-2.8-3.6-5-8-5Z"/></svg>
+        <input id="lock-login" type="email" placeholder="Email" autocomplete="username">
+      </div>
+      <div class="lock-input-wrap">
+        <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M17 9V7a5 5 0 0 0-10 0v2a3 3 0 0 0-3 3v7a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-7a3 3 0 0 0-3-3ZM9 7a3 3 0 0 1 6 0v2H9Z"/></svg>
+        <input id="lock-password" type="password" placeholder="Parol" autocomplete="current-password">
+        <button type="button" id="lock-password-toggle" class="lock-eye" title="Parolni ko'rsatish">
+          <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 5c-5 0-9.3 3.1-11 7.5C2.7 16.9 7 20 12 20s9.3-3.1 11-7.5C21.3 8.1 17 5 12 5Zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10Zm0-2a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/></svg>
+        </button>
+      </div>
+      <button id="lock-submit">KIRISH</button>
+      <div class="lock-error" id="lock-error"></div>
+    </div>
+  </div>
+</div>
+<div class="app" id="app-root" style="display:none;">
+  <div class="sidebar">
+    <div class="brand-row">
+      <svg class="brand-mark" viewBox="0 0 26 26"><rect x="2" y="3" width="4" height="20" fill="#fff"/><rect x="7.5" y="3" width="4" height="12.5" fill="#fff"/><rect x="13" y="3" width="4.5" height="20" fill="#fff"/><rect x="19" y="3" width="4" height="20" fill="#fff"/></svg>
+      <div class="brand">Perfect<br>University</div>
+    </div>
+    <div class="brand-sub">Kontrakt bo'limi</div>
+    <div class="nav-item active" data-view="home">Bosh sahifa</div>
+    <div class="nav-item nav-parent" id="nav-arizalar-toggle">
+      <span>Talabalar ro'yxati</span>
+      <span class="nav-chevron" id="nav-arizalar-chevron">&#9662;</span>
+    </div>
+    <div class="nav-submenu" id="nav-arizalar-submenu" style="display:none;">
+      <div class="nav-item nav-subitem" data-view="list" data-category="complete">Umumiy arizalar</div>
+      <div class="nav-item nav-subitem" data-view="list" data-category="incomplete">Chala arizalar</div>
+      <div class="nav-item nav-subitem" data-view="list" data-category="rejected">Arxiv arizalar</div>
+    </div>
+    <div class="nav-item" data-view="daily">Kunlik rejalar</div>
+    <div class="nav-item" data-view="reports">Hisobotlar</div>
+    <div class="nav-item" data-view="paid">To'langanlar</div>
+    <div class="nav-item" data-view="stats">Statistika</div>
+    <div id="theme-toggle"><span id="theme-icon">&#9728;</span> <span id="theme-label">Kunduzgi rejim</span></div>
+    <div class="sidebar-footer"><div id="logout-link" style="cursor:pointer;color:#B7C4D6;margin-bottom:14px;font-size:13px;">&#8592; Chiqish</div>Ichki boshqaruv paneli.<br>Ma'lumotlar shu qurilmada saqlanadi.</div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <button class="topbar-btn" id="export-pdf-btn" title="PDF formatida yuklab olish" style="display:none;">&#128196; PDF yuklab olish</button>
+      <div class="profile-menu" id="profile-menu">
+        <button class="profile-trigger" id="profile-trigger" type="button">
+          <div class="profile-trigger-text">
+            <div class="profile-trigger-title">Bunyod</div>
+            <div class="profile-trigger-sub">Kontrakt operatori</div>
+          </div>
+          <div class="profile-avatar"><svg viewBox="0 0 24 24" width="15" height="15"><path fill="#fff" d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v3h16v-3c0-2.8-3.6-5-8-5Z"/></svg></div>
+        </button>
+        <div class="profile-dropdown hidden" id="profile-dropdown">
+          <button class="profile-dropdown-item" id="profile-menu-profile" type="button">
+            <span class="profile-dropdown-icon">&#128100;</span><span>Profil</span>
+          </button>
+          <button class="profile-dropdown-item" id="profile-menu-password" type="button">
+            <span class="profile-dropdown-icon">&#128273;</span><span>Parolni o'zgartirish</span>
+          </button>
+          <div class="profile-dropdown-divider"></div>
+          <button class="profile-dropdown-item danger" id="profile-menu-logout" type="button">
+            <span class="profile-dropdown-icon">&#8592;</span><span>Chiqish</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="main-scroll">
+    <div id="view-home">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+        <div>
+          <h1 class="page-title">Bosh sahifa</h1>
+          <p class="page-sub">Umumiy holat va diqqat talab qiladigan talabalar bir qarashda.</p>
+        </div>
+        <button class="btn-secondary" id="open-crm-btn" style="flex:none;width:auto;">CRM'dan olib kelish</button>
+      </div>
+
+      <div class="stats" id="stats-strip-home"></div>
+
+      <div class="home-grid">
+        <div class="table-wrap home-card">
+          <h3 class="card-title">Arizalar holati</h3>
+          <div class="donut-row" id="donut-status"></div>
+        </div>
+        <div class="table-wrap home-card">
+          <h3 class="card-title">Yo'nalishlar bo'yicha</h3>
+          <div class="donut-row" id="donut-direction"></div>
+        </div>
+      </div>
+
+      <div class="home-grid">
+        <div class="table-wrap home-card">
+          <h3 class="card-title">Diqqat talab qiladi <span class="card-title-sub">(Kechikkan)</span></h3>
+          <div id="attention-list"></div>
+        </div>
+        <div class="table-wrap home-card">
+          <h3 class="card-title">Bugun to'lov kutilayotganlar</h3>
+          <div id="recent-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-daily" style="display:none;">
+      <h1 class="page-title">Kunlik rejalar</h1>
+      <p class="page-sub">Lidlar va'da qilgan to'lov sanasi bo'yicha kun-kun guruhlangan.</p>
+      <div id="daily-plan-content"></div>
+    </div>
+
+    <div id="view-reports" style="display:none;">
+      <h1 class="page-title">Hisobotlar</h1>
+      <p class="page-sub">Shaxsiy qayd daftarchasi — kunlik faoliyat va oylik konversiya.</p>
+
+      <div class="table-wrap home-card" style="margin-bottom:18px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+          <h3 class="card-title" style="margin:0;">Kunlik hisobot</h3>
+          <input type="date" id="report-day-input" style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink);font-family:var(--font-body);font-size:13px;">
+        </div>
+        <div class="stats" id="daily-report-stats" style="grid-template-columns:repeat(3,1fr);margin-bottom:16px;"></div>
+        <div id="daily-report-list"></div>
+      </div>
+
+      <div class="table-wrap home-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+          <h3 class="card-title" style="margin:0;">Oylik konversiya</h3>
+          <input type="month" id="report-month-input" style="padding:8px 11px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink);font-family:var(--font-body);font-size:13px;">
+        </div>
+        <div class="stats" id="monthly-report-stats" style="grid-template-columns:repeat(4,1fr);"></div>
+      </div>
+    </div>
+
+    <div id="view-paid" style="display:none;">
+      <h1 class="page-title">To'langanlar</h1>
+      <p class="page-sub">To'lovni yakunlagan (Yakuniy status: To'langan) talabalar ro'yxati va statistikasi.</p>
+
+      <div class="stats" id="stats-strip-paid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px;"></div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Talaba (F.I.Sh)</th>
+              <th>Yo'nalish</th>
+              <th>To'lov summasi</th>
+              <th>Shartnoma raqami</th>
+              <th>To'lov sanasi</th>
+            </tr>
+          </thead>
+          <tbody id="paid-table-body"></tbody>
+        </table>
+        <div class="empty" id="paid-empty-state" style="display:none;">Hozircha to'langan talaba yo'q.</div>
+      </div>
+    </div>
+
+    <div id="view-list" style="display:none;">
+      <h1 class="page-title" id="list-page-title">Talabalar ro'yxati</h1>
+      <p class="page-sub" id="list-page-sub">Barcha kerakli ma'lumotlari to'liq kiritilgan, faol talabalar.</p>
+
+
+      <div class="toolbar">
+        <div class="search">
+          <span class="search-icon">&#128269;</span>
+          <input id="search-input" type="text" placeholder="Ism, passport, telefon yoki yo'nalish bo'yicha qidirish...">
+        </div>
+        <select class="sort-select" id="sort-select">
+          <option value="default">Saralash: Muddat bo'yicha</option>
+          <option value="name-asc">Ism (A-Z)</option>
+          <option value="score-desc">Ball (yuqoridan)</option>
+          <option value="nextaction-asc">To'lov sanasi (yaqin)</option>
+          <option value="created-desc">Qo'shilgan sana (yangi)</option>
+        </select>
+        <button class="topbar-btn" id="adv-filter-toggle">&#9881; Kengaytirilgan qidiruv</button>
+        <div class="filters" id="filter-tabs"></div>
+        <button class="btn-primary" id="add-btn">+ Talaba qo'shish</button>
+      </div>
+
+      <div class="table-wrap home-card" id="adv-filter-panel" style="display:none;margin-bottom:16px;">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:end;">
+          <div class="field" style="margin-bottom:0;">
+            <label>Yo'nalish</label>
+            <select id="adv-direction"><option value="">Barchasi</option></select>
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>Yakuniy status</label>
+            <select id="adv-final-status">
+              <option value="">Barchasi</option>
+              <option value="jarayonida">Jarayonda</option>
+              <option value="tolangan">To'langan</option>
+              <option value="kechikyapti">Kechiktirilgan</option>
+              <option value="rad-etdi">Rad etilgan</option>
+            </select>
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>To'lov sanasi — dan</label>
+            <input type="date" id="adv-date-from">
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <label>To'lov sanasi — gacha</label>
+            <input type="date" id="adv-date-to">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px;">
+          <button class="btn-primary" id="adv-apply-btn" style="flex:none;">Qidirish</button>
+          <button class="btn-secondary" id="adv-reset-btn" style="flex:none;width:auto;">Tozalash</button>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:36px;">№</th>
+              <th>Talaba (F.I.Sh)</th>
+              <th>Passport seriya/raqami</th>
+              <th>Yo'nalish / Ball</th>
+              <th>Holat</th>
+              <th>To'lov</th>
+              <th>To'lov sanasi</th>
+              <th>Telefon raqami</th>
+              <th>Yakuniy status</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+        <div class="empty" id="empty-state" style="display:none;">Hozircha talaba yo'q. "+ Talaba qo'shish" tugmasini bosing.</div>
+      </div>
+    </div>
+
+    <div id="view-stats" style="display:none;">
+      <h1 class="page-title">Statistika</h1>
+      <p class="page-sub">Umumiy ko'rsatkichlar va to'lov taqsimoti.</p>
+      <div class="table-wrap" style="padding:20px;">
+        <div id="bars"></div>
+      </div>
+    </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="overlay">
+  <div class="drawer">
+    <button class="close-x" id="close-drawer">&#10005;</button>
+    <div class="drawer-scroll">
+    <h2 id="drawer-title">Talaba qo'shish</h2>
+    <div class="field"><label>F.I.Sh.</label><input id="f-name" placeholder="Familiya Ism Sharif"></div>
+    <div class="field-row">
+      <div class="field" style="flex:0 0 90px;">
+        <label>Seriya</label>
+        <select id="f-passport-series">
+          <option>AA</option>
+          <option>AB</option>
+          <option>AC</option>
+          <option>AD</option>
+          <option>AE</option>
+          <option>AF</option>
+          <option>FA</option>
+          <option>KA</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Pasport raqami</label>
+        <input id="f-passport-number" type="text" inputmode="numeric" placeholder="1234567">
+      </div>
+    </div>
+    <div class="field-row">
+<div class="field"><label>Telefon</label><input id="f-phone" placeholder="+998 90 000 00 00"></div>
+      <div class="field"><label>Imtihon balli</label><input id="f-score" type="number" placeholder="00.0"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Ota/ona raqami</label><input id="f-parent-phone" placeholder="+998 90 000 00 00"></div>
+      <div class="field"><label>Manzili</label><input id="f-address" placeholder="Tuman, ko'cha, uy"></div>
+    </div>
+    <div class="field">
+      <label>Ta'lim bosqichi</label>
+      <select id="f-degree-stage">
+        <option value="">Tanlang</option>
+        <option value="bakalavr">Bakalavr</option>
+        <option value="ikkinchi-mutaxassislik">2-chi mutaxassislik</option>
+        <option value="perevod">Perevod</option>
+      </select>
+    </div>
+    <div class="field"><label>Yo'nalish</label>
+      <select id="f-direction">
+        <option value="">Tanlang</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Ta'lim shakli</label>
+      <select id="f-form">
+        <option value="kunduzgi">Kunduzgi</option>
+        <option value="kechki">Kechki</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Yakuniy status</label>
+      <select id="f-final-status">
+        <option value="jarayonida">Jarayonda</option>
+        <option value="tolangan">To'langan</option>
+        <option value="kechikyapti">Kechiktirilgan</option>
+        <option value="rad-etdi">Rad etilgan</option>
+      </select>
+    </div>
+    <div class="divider"></div>
+    <div class="field-row">
+      <div class="field"><label>Kontrakt summasi</label><input id="f-total" type="text" inputmode="numeric" placeholder="—"></div>
+      <div class="field"><label>To'lanadigan summa</label><input id="f-paid" type="text" inputmode="numeric" placeholder="0"></div>
+    </div>
+    <div class="field"><label>Shartnoma raqami</label><input id="f-contract-number" placeholder="№00000000000000"></div>
+    <div class="check-row">
+      <input type="checkbox" id="f-signed" style="width:16px;height:16px;">
+      <label for="f-signed" style="font-size:13px;">Shartnoma imzolangan</label>
+    </div>
+    <div class="divider"></div>
+    <div class="field-row">
+      <div class="field"><label>Aloqaga chiqildi</label><input id="f-lastcontact" type="date"></div>
+      <div class="field"><label>To'lov sanasi</label><input id="f-nextaction" type="date"></div>
+    </div>
+    <div class="field"><label>Yangi to'lov kiritish</label><input id="f-promised" type="text" inputmode="numeric" placeholder="masalan: 2 500 000"><div class="hint">Bu yerga kiritilgan summa avtomatik "To'lanadigan summa"ga qo'shiladi.</div></div>
+    <div class="field"><label>Izoh</label><textarea id="f-notes" placeholder="Qo'shimcha izoh"></textarea></div>
+    </div>
+
+    <div class="drawer-actions">
+      <button class="btn-secondary" id="save-btn" style="background:var(--navy);color:#fff;border-color:var(--navy);">Saqlash</button>
+      <button class="btn-danger" id="delete-btn" style="display:none;">O'chirish</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="view-overlay">
+  <div class="drawer" style="width:460px;">
+    <button class="close-x" id="view-close">&#10005;</button>
+    <div class="drawer-scroll" id="view-drawer-scroll"></div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="receipt-overlay">
+  <div class="drawer" style="width:420px;">
+    <button class="close-x" id="receipt-close">&#10005;</button>
+    <div class="drawer-scroll">
+      <h2>To'lov cheki matni</h2>
+      <p class="hint" style="margin-bottom:14px;">Guruhga yuborish uchun tayyor — nusxalab joylashtiring.</p>
+      <textarea id="receipt-text-area" readonly style="width:100%;min-height:340px;padding:14px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink);font-family:var(--font-mono);font-size:12.5px;line-height:1.65;resize:vertical;"></textarea>
+    </div>
+    <div class="drawer-actions">
+      <button class="btn-secondary" id="receipt-copy-btn" style="background:var(--navy);color:#fff;border-color:var(--navy);">Nusxalash</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="crm-overlay">
+  <div class="drawer" style="width:440px;">
+    <button class="close-x" id="crm-close">&#10005;</button>
+    <div class="drawer-scroll">
+    <h2>AmoCRM'dan ma'lumot olib kelish</h2>
+    <div class="field"><label>Subdomen</label><input id="crm-subdomain" placeholder="masalan: sarbonuniversity"></div>
+    <div class="hint">To'liq manzil: https://[subdomen].amocrm.ru</div>
+    <div class="field" style="margin-top:14px;"><label>API token</label><input id="crm-token" type="password" placeholder="Shaxsiy integratsiya tokeni"></div>
+    <div class="hint">AmoCRM → Sozlamalar → Integratsiyalar → Shaxsiy integratsiya orqali olinadi. Token faqat shu brauzeringizda saqlanadi, hech qayerga yuborilmaydi.</div>
+    <div class="divider"></div>
+    <div id="crm-status" class="hint" style="min-height:18px;"></div>
+    </div>
+    <div class="drawer-actions">
+      <button class="btn-secondary" id="crm-import-btn" style="background:var(--navy);color:#fff;border-color:var(--navy);">Ulash va olib kelish</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="profile-overlay">
+  <div class="drawer" style="width:380px;">
+    <button class="close-x" id="profile-info-close">&#10005;</button>
+    <div class="drawer-scroll">
+      <h2>Profil</h2>
+      <div class="field"><label>Ism</label><input value="Bunyod" disabled></div>
+      <div class="field"><label>Lavozim</label><input value="Kontrakt operatori" disabled></div>
+      <div class="field"><label>Email</label><input id="profile-info-email" value="" disabled></div>
+    </div>
+    <div class="drawer-actions">
+      <button class="btn-secondary" id="profile-info-close-btn">Yopish</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="password-overlay">
+  <div class="drawer" style="width:400px;">
+    <button class="close-x" id="password-close">&#10005;</button>
+    <div class="drawer-scroll">
+      <h2>Parolni o'zgartirish</h2>
+      <div class="field"><label>Joriy parol</label><input id="pw-current" type="password" placeholder="Joriy parolingiz" autocomplete="current-password"></div>
+      <div class="field"><label>Yangi parol</label><input id="pw-new" type="password" placeholder="Kamida 6 ta belgi" autocomplete="new-password"></div>
+      <div class="field"><label>Yangi parolni takrorlang</label><input id="pw-confirm" type="password" placeholder="Yangi parolni qayta kiriting" autocomplete="new-password"></div>
+      <div class="lock-error" id="pw-error" style="margin-top:2px;"></div>
+    </div>
+    <div class="drawer-actions">
+      <button class="btn-secondary" id="pw-save-btn" style="background:var(--navy);color:#fff;border-color:var(--navy);">Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script>
+/* ===== Kirish ekrani (Firebase Authentication moduli quyida boshqaradi) ===== */
+function revealApp(){
+  document.getElementById('lock-screen').style.display = 'none';
+  document.getElementById('app-root').style.display = 'flex';
+}
+function showLockScreen(){
+  document.getElementById('lock-screen').style.display = 'flex';
+  document.getElementById('app-root').style.display = 'none';
+}
+document.getElementById('lock-password-toggle').addEventListener('click', ()=>{
+  const pwInput = document.getElementById('lock-password');
+  pwInput.type = pwInput.type === 'password' ? 'text' : 'password';
+});
+
+const STORAGE_KEY = 'students-data';
+let students = [];
+let currentFilter = 'all';
+let currentCategory = 'complete';
+let currentSort = 'default';
+let advDirection = '';
+let advFinalStatus = '';
+let advDateFrom = '';
+let advDateTo = '';
+let currentSearch = '';
+let editingId = null;
+let pendingReceiptId = null;
+
+/* ===== Toast xabarlar ===== */
+function showToast(message, type){
+  type = type || 'success';
+  const container = document.getElementById('toast-container');
+  const icon = type==='success' ? '&#10003;' : type==='error' ? '&#9888;' : '&#8505;';
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+  container.appendChild(el);
+  setTimeout(()=>{
+    el.classList.add('leaving');
+    setTimeout(()=> el.remove(), 220);
+  }, 3200);
+}
+
+function fmt(n){
+  n = Math.round(Number(n)||0);
+  const sign = n < 0 ? '-' : '';
+  return sign + groupThousands(String(Math.abs(n)));
+}
+function groupThousands(digits){
+  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}
+function attachMoneyMask(el){
+  el.addEventListener('input', ()=>{
+    const digits = el.value.replace(/\D/g,'');
+    el.value = digits ? groupThousands(digits) : '';
+    el.setSelectionRange(el.value.length, el.value.length);
+  });
+}
+function uid(){ return 's_' + Date.now() + '_' + Math.random().toString(36).slice(2,7); }
+function parsePassport(raw){
+  if(!raw) return {series:'AA', number:''};
+  const m = String(raw).trim().toUpperCase().match(/^([A-Z]{2})\s*(\d+)$/);
+  return m ? {series:m[1], number:m[2]} : {series:'AA', number:''};
+}
+function formatPassportDisplay(raw){
+  if(!raw) return '';
+  const p = parsePassport(raw);
+  return p.number ? `${p.series} ${p.number}` : raw;
+}
+function formLabel(key){
+  return {kunduzgi:"Kunduzgi", masofaviy:"Masofaviy", kechki:"Kechki"}[key] || '';
+}
+function degreeLabel(key){
+  return {bakalavr:"Bakalavr", 'ikkinchi-mutaxassislik':"2-chi mutaxassislik", perevod:"Perevod"}[key] || '';
+}
+function finalStatusLabel(key){
+  return {jarayonida:"Jarayonda", tolangan:"To'langan", kechikyapti:"Kechiktirilgan", 'rad-etdi':"Rad etilgan"}[key] || "Jarayonda";
+}
+function finalStatusColor(key){
+  return {jarayonida:'var(--amber)', tolangan:'var(--forest)', kechikyapti:'var(--brick)', 'rad-etdi':'var(--ink-soft)'}[key] || 'var(--amber)';
+}
+function displayHolat(st, s){
+  if(st.finalStatus === 'tolangan') return {label:"Rasmiylashtirilgan", cls:'forest'};
+  return s;
+}
+
+const OVERDUE_HOURS = 72;
+function statusOf(st){
+  const paid = Number(st.paidTotal)||0;
+  const total = Number(st.contractTotal)||17000000;
+  if(paid >= total && total > 0) return {key:'paid', label:"To'liq to'langan", cls:'forest'};
+  if(paid > 0) return {key:'partial', label:'Band qilingan', cls:'amber'};
+  if(st.createdAt && (Date.now() - st.createdAt) > OVERDUE_HOURS*3600*1000){
+    return {key:'overdue', label:'Kechikkan', cls:'brick'};
+  }
+  return {key:'unpaid', label:'Band qilinmagan', cls:'slate'};
+}
+
+function isOverdue(st){
+  if(!st.nextAction) return false;
+  const s = statusOf(st);
+  if(s.key === 'paid') return false;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const na = new Date(st.nextAction);
+  return na < today;
+}
+
+function isIncomplete(st){
+  const phoneEmpty = !st.phone || st.phone.trim()==='+998';
+  return !st.passport || !st.direction || !st.examScore || phoneEmpty || !st.degreeStage;
+}
+
+async function loadStudents(){
+  /* Bu funksiya pastdagi Firebase moduli tomonidan to'liq almashtiriladi (window.loadStudents). */
+}
+
+async function persist(){
+  /* Bu funksiya pastdagi Firebase moduli tomonidan to'liq almashtiriladi (window.persist). */
+}
+
+function computeStats(){
+  const active = students.filter(st=>st.finalStatus!=='rad-etdi' && !isIncomplete(st));
+  const total = active.length;
+  let paidCount=0, partialCount=0, unpaidCount=0, overdueCount=0, sumPaid=0, sumOutstanding=0, finalizedCount=0, sumAgreed=0, sumPromised=0, sumRealized=0;
+  active.forEach(st=>{
+    const s = statusOf(st);
+    if(st.finalStatus==='tolangan'){
+      finalizedCount++;
+    } else if(s.key==='paid') paidCount++;
+    else if(s.key==='partial') partialCount++;
+    else if(s.key==='overdue') overdueCount++;
+    else unpaidCount++;
+    sumPaid += Number(st.paidTotal)||0;
+    const total_c = Number(st.contractTotal)||17000000;
+    sumAgreed += total_c;
+    if(s.key!=='paid') sumOutstanding += Math.max(total_c-(Number(st.paidTotal)||0),0);
+    /* Statistika sahifasi uchun: "To'lanadigan summa" — faqat Yakuniy status "Jarayonda"
+       bo'lgan talabalarning "To'lanadigan summa" maydoniga (paidTotal) kiritilgan summalari
+       yig'indisi (pay to promise). Kechiktirilgan bu yerga kirmaydi. "To'lanilgan summa" —
+       faqat Yakuniy status "To'langan"ga o'tkazilgandan keyin hisoblanadigan real summa. */
+    if(st.finalStatus === 'tolangan'){
+      sumRealized += Number(st.paidTotal)||0;
+    } else if((st.finalStatus||'jarayonida') === 'jarayonida'){
+      sumPromised += Number(st.paidTotal)||0;
+    }
+  });
+  /* "Umumiy kiritilgan summa" — Jarayonda + To'langan ikkala statusning "To'lanadigan summa"
+     maydonlaridagi umumiy yig'indisi (arxiv/rad etilganlar bunga kirmaydi).
+     "Arxivlangan summa" — faqat Rad etilgan (arxiv) talabalarning shu maydonidagi summasi,
+     alohida, "Umumiy kiritilgan summa"ga qo'shilmaydi. */
+  const sumContractCombined = sumPromised + sumRealized;
+  const sumArchived = students.filter(st=>st.finalStatus==='rad-etdi' && !isIncomplete(st))
+    .reduce((a,st)=>a+(Number(st.paidTotal)||0), 0);
+  return {total,paidCount,partialCount,unpaidCount,overdueCount,sumPaid,sumOutstanding,finalizedCount,sumAgreed,sumPromised,sumRealized,sumContractCombined,sumArchived};
+}
+
+/* Bosh sahifadagi "Arizalar holati" donut va Statistika sahifasidagi ustunlar
+   bir xil hisob-kitobdan foydalanadi — shu funksiya ikkalasi uchun ham yagona manba. */
+function getArizalarHolatiSegments(){
+  const generalPool = students.filter(st=>!isIncomplete(st));
+  const jarayondaCount = generalPool.filter(st=>(st.finalStatus||'jarayonida')==='jarayonida').length;
+  const tolanganCount = generalPool.filter(st=>st.finalStatus==='tolangan').length;
+  const kechiktirilganCount = generalPool.filter(st=>st.finalStatus==='kechikyapti').length;
+  const radEtdiCount = generalPool.filter(st=>st.finalStatus==='rad-etdi').length;
+  return [
+    {label:'Jarayonda', value:jarayondaCount, color:'var(--navy)', key:'jarayonida'},
+    {label:"To'langan", value:tolanganCount, color:'var(--forest)', key:'tolangan'},
+    {label:'Kechiktirilgan', value:kechiktirilganCount, color:'var(--brick)', key:'kechikyapti'},
+    {label:'Rad etilgan', value:radEtdiCount, color:'var(--ink-soft)', key:'rad-etdi'}
+  ];
+}
+
+function renderStatsStrip(targetId){
+  const s = computeStats();
+  const rejectedCount = students.filter(st=>st.finalStatus==='rad-etdi').length;
+  const kechiktirilganCount = students.filter(st=>!isIncomplete(st) && st.finalStatus!=='rad-etdi' && st.finalStatus==='kechikyapti').length;
+  const el = document.getElementById(targetId);
+  el.innerHTML = `
+    <div class="stat stat-click" data-goto="all"><div class="stat-label">Jami talabalar</div><div class="stat-value">${s.total}</div></div>
+    <div class="stat stat-click" data-goto="tolangan"><div class="stat-label">Rasmiylashtirilganlar</div><div class="stat-value forest">${s.finalizedCount}</div></div>
+    <div class="stat stat-click" data-goto="jarayonida"><div class="stat-label">Band qilingan</div><div class="stat-value amber">${s.partialCount}</div></div>
+    <div class="stat stat-click" data-category="incomplete"><div class="stat-label">Band qilinmagan</div><div class="stat-value slate-text">${s.unpaidCount}</div></div>
+    <div class="stat stat-click" data-goto="kechikyapti"><div class="stat-label">Kechikkan</div><div class="stat-value brick">${kechiktirilganCount}</div></div>
+    <div class="stat stat-click" data-goto="rad-etdi"><div class="stat-label">Arxivlangan</div><div class="stat-value slate-text">${rejectedCount}</div></div>
+    <div class="stat"><div class="stat-label">Yig'ilgan summa</div><div class="stat-value">${fmt(s.sumPaid)}</div></div>
+  `;
+  el.querySelectorAll('.stat-click').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      if(card.dataset.category === 'incomplete'){
+        switchView('list', 'incomplete');
+      } else {
+        switchView('list', 'complete');
+        currentFilter = card.dataset.goto;
+        updateListPageTitle();
+      }
+      render();
+    });
+  });
+}
+
+function renderBars(){
+  const s = computeStats();
+  const segments = getArizalarHolatiSegments();
+  const maxV = Math.max(...segments.map(seg=>seg.value), 1);
+  document.getElementById('bars').innerHTML = segments.map(r=>`
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+      <div style="width:140px;font-size:13px;color:var(--ink-soft);">${r.label}</div>
+      <div style="flex:1;background:var(--line-soft);border-radius:4px;height:14px;overflow:hidden;">
+        <div style="width:${(r.value/maxV*100)}%;background:${r.color};height:100%;"></div>
+      </div>
+      <div style="width:30px;text-align:right;font-family:var(--font-mono);font-size:13px;">${r.value}</div>
+    </div>
+  `).join('') + `
+    <div class="divider"></div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;">
+      <span style="color:var(--ink-soft);">To'lanadigan summa (Pay to Promise)</span>
+      <span class="mono" style="font-weight:500;">${fmt(s.sumPromised)} so'm</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;">
+      <span style="color:var(--ink-soft);">To'lanilgan summa</span>
+      <span class="mono" style="font-weight:500;color:var(--forest);">${fmt(s.sumRealized)} so'm</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;">
+      <span style="color:var(--ink-soft);">Umumiy kiritilgan summa</span>
+      <span class="mono" style="font-weight:600;">${fmt(s.sumContractCombined)} so'm</span>
+    </div>
+    <div class="divider"></div>
+    <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;">
+      <span style="color:var(--ink-soft);">Arxivlangan summa</span>
+      <span class="mono" style="font-weight:500;color:var(--ink-soft);">${fmt(s.sumArchived)} so'm</span>
+    </div>
+  `;
+}
+
+function renderFilters(){
+  const complete = students.filter(st=>!isIncomplete(st));
+  const countByStatus = key => complete.filter(st=>(st.finalStatus||'jarayonida')===key).length;
+  const tabs = [
+    {key:'all', label:`Barchasi (${complete.length})`},
+    {key:'jarayonida', label:`Jarayonda (${countByStatus('jarayonida')})`},
+    {key:'tolangan', label:`To'langan (${countByStatus('tolangan')})`},
+    {key:'kechikyapti', label:`Kechiktirilgan (${countByStatus('kechikyapti')})`},
+    {key:'rad-etdi', label:`Rad etilgan (${countByStatus('rad-etdi')})`}
+  ];
+  const tabsEl = document.getElementById('filter-tabs');
+  if(currentCategory !== 'complete' || currentFilter === 'rad-etdi'){
+    tabsEl.innerHTML = '';
+    tabsEl.style.display = 'none';
+    return;
+  }
+  tabsEl.style.display = 'flex';
+  tabsEl.innerHTML = tabs.map(t=>
+    `<button class="filter-btn ${currentFilter===t.key?'active':''}" data-filter="${t.key}">${t.label}</button>`
+  ).join('');
+  document.querySelectorAll('.filter-btn').forEach(b=>{
+    b.onclick = ()=>{ currentFilter = b.dataset.filter; updateListPageTitle(); render(); };
+  });
+}
+
+function sortList(list){
+  if(currentSort === 'name-asc'){
+    list.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  } else if(currentSort === 'score-desc'){
+    list.sort((a,b)=>(Number(b.examScore)||-1)-(Number(a.examScore)||-1));
+  } else if(currentSort === 'nextaction-asc'){
+    list.sort((a,b)=>(a.nextAction||'9999').localeCompare(b.nextAction||'9999'));
+  } else if(currentSort === 'created-desc'){
+    list.sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+  } else {
+    list.sort((a,b)=>{
+      const oa = isOverdue(a) ? 0 : 1;
+      const ob = isOverdue(b) ? 0 : 1;
+      if(oa!==ob) return oa-ob;
+      return (a.nextAction||'9999').localeCompare(b.nextAction||'9999');
+    });
+  }
+  return list;
+}
+
+function renderTable(){
+  let list = students.filter(st=>{
+    const incomplete = isIncomplete(st);
+
+    if(currentCategory === 'incomplete'){
+      if(!incomplete) return false;
+    } else {
+      if(incomplete) return false;
+      if(currentFilter !== 'all'){
+        if((st.finalStatus||'jarayonida') !== currentFilter) return false;
+      }
+    }
+    if(advDirection && st.direction !== advDirection) return false;
+    if(advFinalStatus && (st.finalStatus||'jarayonida') !== advFinalStatus) return false;
+    if(advDateFrom && (!st.nextAction || st.nextAction < advDateFrom)) return false;
+    if(advDateTo && (!st.nextAction || st.nextAction > advDateTo)) return false;
+    if(currentSearch){
+      const q = currentSearch.toLowerCase();
+      return (st.name||'').toLowerCase().includes(q)
+        || (st.phone||'').includes(q)
+        || (st.passport||'').toLowerCase().includes(q)
+        || (st.direction||'').toLowerCase().includes(q);
+    }
+    return true;
+  });
+  sortList(list);
+
+  const tbody = document.getElementById('table-body');
+  document.getElementById('empty-state').style.display = students.length===0 ? 'block' : 'none';
+  if(list.length===0 && students.length>0){
+    tbody.innerHTML = `<tr><td colspan="9" class="empty">Mos talaba topilmadi.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = list.map((st, idx)=>{
+    const s = statusOf(st);
+    const total_c = Number(st.contractTotal)||17000000;
+    const paid = Number(st.paidTotal)||0;
+    const pct = Math.min(Math.round(paid/total_c*100),100);
+    const overdue = st.finalStatus === 'kechikyapti';
+    return `
+      <tr class="row" data-id="${st.id}">
+        <td class="row-num">${idx+1}</td>
+        <td><div class="name-cell">${st.name||'—'}</div></td>
+        <td class="mono" style="font-size:12.5px;">${formatPassportDisplay(st.passport)||'—'}</td>
+        <td>
+          <div>${st.direction||'—'}${st.studyForm?` <span class="sub-cell" style="display:inline;">(${formLabel(st.studyForm)}${st.degreeStage?', '+degreeLabel(st.degreeStage):''})</span>`:''}</div>
+          <div class="sub-cell mono">Ball: ${st.examScore||'—'}</div>
+        </td>
+        <td>
+          <span class="stamp ${displayHolat(st,s).cls}">${displayHolat(st,s).label}</span>
+        </td>
+        <td>
+          <div class="mono" style="font-size:12.5px;color:var(--forest);font-weight:600;">${fmt(paid)}</div>
+          <div class="mono" style="font-size:12.5px;margin-bottom:5px;">${fmt(total_c)}</div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;"></div></div>
+        </td>
+        <td class="mono" style="font-size:12.5px;white-space:nowrap;">
+          ${st.nextAction||'—'}
+          ${overdue?'<div class="mono" style="color:var(--brick);font-size:12.5px;margin-top:2px;">Muddati o\'tgan</div>':''}
+        </td>
+        <td class="mono" style="font-size:12.5px;white-space:nowrap;">${st.phone||'—'}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <select class="table-status-select" data-id="${st.id}" style="font-size:12px;padding:5px 6px;border:1px solid var(--line);border-radius:5px;background:var(--paper);font-family:var(--font-body);color:${finalStatusColor(st.finalStatus)};appearance:none;-webkit-appearance:none;-moz-appearance:none;">
+              <option value="jarayonida" ${(st.finalStatus||'jarayonida')==='jarayonida'?'selected':''}>Jarayonda</option>
+              <option value="tolangan" ${st.finalStatus==='tolangan'?'selected':''}>To'langan</option>
+              <option value="kechikyapti" ${st.finalStatus==='kechikyapti'?'selected':''}>Kechiktirilgan</option>
+              <option value="rad-etdi" ${st.finalStatus==='rad-etdi'?'selected':''}>Rad etilgan</option>
+            </select>
+            ${st.finalStatus==='tolangan' ? `<button class="icon-btn receipt-btn" data-receipt="${st.id}" title="${st.receiptImage ? 'Chekni ko\'rish' : 'To\'lov chekini yuklash'}" style="${st.receiptImage ? 'color:var(--forest);' : ''}">&#129534;</button>` : ''}
+            ${st.finalStatus==='tolangan' ? `<button class="icon-btn" data-gen-receipt="${st.id}" title="To'lov cheki matnini chiqarish">&#128228;</button>` : ''}
+            <button class="icon-btn edit-btn" data-edit="${st.id}" title="Tahrirlash">&#9998;</button>
+            <button class="icon-btn" data-del="${st.id}" title="Butunlay o'chirish">&#128465;</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  tbody.querySelectorAll('[data-receipt]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const target = students.find(s=>s.id===btn.dataset.receipt);
+      if(target && target.receiptImage){
+        const win = window.open('', '_blank');
+        if(win){
+          win.document.write(`<title>To'lov cheki — ${target.name||''}</title><body style="margin:0;background:#16232F;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="${target.receiptImage}" style="max-width:100%;max-height:100vh;"></body>`);
+        }
+      } else {
+        pendingReceiptId = btn.dataset.receipt;
+        document.getElementById('receipt-file-input').click();
+      }
+    });
+  });
+  tbody.querySelectorAll('[data-gen-receipt]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const target = students.find(s=>s.id===btn.dataset.genReceipt);
+      if(!target) return;
+      const history = target.paymentHistory||[];
+      const pad2 = n=>String(n).padStart(2,'0');
+      let amount, dateShort;
+      if(history.length){
+        const last = history[history.length-1];
+        amount = Number(last.amount)||0;
+        const d = new Date(last.date+'T00:00:00');
+        dateShort = `${pad2(d.getDate())}/${pad2(d.getMonth()+1)}`;
+      } else {
+        amount = Number(target.paidTotal)||0;
+        const now = new Date();
+        dateShort = `${pad2(now.getDate())}/${pad2(now.getMonth()+1)}`;
+      }
+      openReceiptModal(generateReceiptText(target, amount, dateShort));
+    });
+  });
+  tbody.querySelectorAll('[data-edit]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      openDrawer(btn.dataset.edit);
+    });
+  });
+  tbody.querySelectorAll('[data-del]').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      const target = students.find(s=>s.id===btn.dataset.del);
+      const name = target ? (target.name||"bu talaba") : "bu talaba";
+      if(confirm(`"${name}"ni butunlay o'chirmoqchimisiz? Bu amalni qaytarib bo'lmaydi.`)){
+        students = students.filter(s=>s.id!==btn.dataset.del);
+        await persist();
+        render();
+        showToast("Talaba o'chirildi", 'success');
+      }
+    });
+  });
+  tbody.querySelectorAll('.table-status-select').forEach(sel=>{
+    sel.addEventListener('click', (e)=> e.stopPropagation());
+    sel.addEventListener('change', async (e)=>{
+      e.stopPropagation();
+      const target = students.find(s=>s.id===sel.dataset.id);
+      if(target){
+        target.finalStatus = sel.value;
+        await persist();
+        render();
+      }
+    });
+  });
+}
+
+function donutArcsSvg(segments, total){
+  const R = 55, CX = 63, CY = 63, SW = 16;
+  const circumference = 2 * Math.PI * R;
+  let acc = 0;
+  const arcs = segments.filter(s=>s.value>0).map(s=>{
+    const segLen = (s.value/total) * circumference;
+    const offset = (acc/total) * circumference;
+    acc += s.value;
+    const clickable = s.key ? ' donut-arc-clickable' : '';
+    const keyAttr = s.key ? ` data-key="${s.key}"` : '';
+    return `<circle class="donut-arc${clickable}" data-value="${s.value}" data-label="${s.label}" data-color="${s.color}"${keyAttr} cx="${CX}" cy="${CY}" r="${R}" fill="none" stroke="${s.color}" stroke-width="${SW}" stroke-dasharray="${segLen.toFixed(2)} ${(circumference-segLen).toFixed(2)}" stroke-dashoffset="${(-offset).toFixed(2)}"></circle>`;
+  }).join('');
+  return `<svg class="donut-svg" viewBox="0 0 126 126" width="126" height="126">${arcs}</svg>`;
+}
+
+function renderDonutBlock(segments, totalLabel){
+  const total = segments.reduce((a,s)=>a+(Number(s.value)||0),0);
+  const ring = total>0
+    ? donutArcsSvg(segments, total)
+    : '';
+  const legend = total<=0
+    ? `<div class="legend-row"><span class="legend-dot" style="background:var(--line);"></span><span class="legend-label">Ma'lumot yo'q</span></div>`
+    : segments.map(s=>{
+        const pct = total>0 ? Math.round(s.value/total*100) : 0;
+        const clickable = s.key ? ' clickable' : '';
+        const keyAttr = s.key ? ` data-key="${s.key}"` : '';
+        return `
+        <div class="legend-row-v2${clickable}"${keyAttr}>
+          <div class="legend-row-top">
+            <span class="legend-dot" style="background:${s.color};"><span class="legend-dot-value">${s.value}</span></span>
+            <span class="legend-label">${s.label}</span>
+            <span class="legend-value">${s.value} <span class="legend-pct">(${pct}%)</span></span>
+          </div>
+          <div class="legend-bar"><div class="legend-bar-fill" style="width:${pct}%;background:${s.color};"></div></div>
+        </div>`;
+      }).join('');
+  return `
+    <div class="donut" style="${total<=0?'background:var(--line-soft);':''}">
+      ${ring}
+      <div class="donut-hole">
+        <div class="donut-total" data-total="${total}" data-total-label="${totalLabel}">${total}</div>
+        <div class="donut-total-label">${totalLabel}</div>
+      </div>
+    </div>
+    <div class="legend">${legend}</div>
+  `;
+}
+
+/* Donut halqasi (SVG arc) va legendadagi qator bir xil ma'lumotga ishora qiladi —
+   ikkalasi ham bir xil bosish (click) harakatini bajarishi kerak. */
+function attachDonutClicks(containerId, onClickKey){
+  const container = document.getElementById(containerId);
+  if(!container) return;
+  container.querySelectorAll('.legend-row-v2.clickable, .donut-arc-clickable').forEach(el=>{
+    el.addEventListener('click', ()=>onClickKey(el.dataset.key));
+  });
+}
+/* Halqaning rangli segmentiga sichqoncha olib borilganda, markazdagi "Jami" soni
+   o'sha segmentning o'z soni va nomiga almashadi (animatsiyali), chiqarilganda qaytadi. */
+function wireDonutRingHover(containerId){
+  const container = document.getElementById(containerId);
+  if(!container) return;
+  const holeTotal = container.querySelector('.donut-total');
+  const holeLabel = container.querySelector('.donut-total-label');
+  if(!holeTotal || !holeLabel) return;
+  const originalTotal = holeTotal.dataset.total;
+  const originalLabel = holeTotal.dataset.totalLabel;
+  container.querySelectorAll('.donut-arc').forEach(arc=>{
+    arc.addEventListener('mouseenter', ()=>{
+      holeTotal.textContent = arc.dataset.value;
+      holeLabel.textContent = arc.dataset.label;
+      holeTotal.style.color = arc.dataset.color;
+    });
+    arc.addEventListener('mouseleave', ()=>{
+      holeTotal.textContent = originalTotal;
+      holeLabel.textContent = originalLabel;
+      holeTotal.style.color = '';
+    });
+  });
+}
+
+function renderHome(){
+  renderStatsStrip('stats-strip-home');
+  const s = computeStats();
+  const activeStudents = students.filter(st=>st.finalStatus!=='rad-etdi');
+  const statusSegments = getArizalarHolatiSegments();
+  document.getElementById('donut-status').innerHTML = renderDonutBlock(statusSegments, 'Jami');
+  attachDonutClicks('donut-status', (key)=>{
+    switchView('list', 'complete');
+    currentFilter = key;
+    updateListPageTitle();
+    render();
+  });
+  wireDonutRingHover('donut-status');
+
+  const counts = {};
+  activeStudents.forEach(st=>{ const d = st.direction || "Ko'rsatilmagan"; counts[d]=(counts[d]||0)+1; });
+  const sortedDirs = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const palette = ['var(--navy)','var(--brick)','var(--forest)','var(--amber)'];
+  /* "Ko'rsatilmagan" haqiqiy yo'nalish emas (bo'sh qiymatlarni yig'ish uchun yorliq xolos),
+     shuning uchun uni bosib filtrlab bo'lmaydi — key berilmaydi. */
+  let dirSegments = sortedDirs.slice(0,4).map((e,i)=>({label:e[0], value:e[1], color:palette[i], key: e[0]==="Ko'rsatilmagan" ? null : e[0]}));
+  const restSum = sortedDirs.slice(4).reduce((a,e)=>a+e[1],0);
+  if(restSum>0) dirSegments.push({label:'Boshqalar', value:restSum, color:'var(--line)'});
+  document.getElementById('donut-direction').innerHTML = renderDonutBlock(dirSegments, 'Talaba');
+  attachDonutClicks('donut-direction', (key)=>{
+    switchView('list', 'complete');
+    currentFilter = 'all';
+    document.getElementById('adv-filter-panel').style.display = 'block';
+    document.getElementById('adv-direction').value = key;
+    advDirection = key;
+    updateListPageTitle();
+    render();
+  });
+  wireDonutRingHover('donut-direction');
+
+  const overdueList = activeStudents.filter(st=>!isIncomplete(st) && st.finalStatus==='kechikyapti')
+    .sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+  const attnEl = document.getElementById('attention-list');
+  attnEl.innerHTML = overdueList.length===0
+    ? `<div class="empty" style="padding:20px 0;">Hozircha kechikkan talaba yo'q.</div>`
+    : overdueList.slice(0,6).map(st=>{
+        const days = st.createdAt ? Math.floor((Date.now()-st.createdAt)/(3600*1000*24)) : 0;
+        return `<div class="mini-row" data-id="${st.id}">
+          <div><div class="name-cell" style="font-size:13px;">${st.name}</div><div class="sub-cell mono">${st.phone||''}</div></div>
+          <div class="sub-cell" style="color:var(--brick);white-space:nowrap;">${days} kun</div>
+        </div>`;
+      }).join('');
+  attnEl.querySelectorAll('.mini-row').forEach(row=>{
+    row.addEventListener('click', ()=>openStudentView(row.dataset.id));
+  });
+
+  const pad2 = n=>String(n).padStart(2,'0');
+  const todayD2 = new Date(); todayD2.setHours(0,0,0,0);
+  const todayStr2 = `${todayD2.getFullYear()}-${pad2(todayD2.getMonth()+1)}-${pad2(todayD2.getDate())}`;
+  const dueToday = activeStudents.filter(st=>st.finalStatus!=='tolangan' && st.nextAction===todayStr2);
+  const recEl = document.getElementById('recent-list');
+  recEl.innerHTML = dueToday.length===0
+    ? `<div class="empty" style="padding:20px 0;">Bugun hech kim to'lov qilishi kutilmayapti.</div>`
+    : dueToday.map(st=>{
+        return `<div class="mini-row" data-id="${st.id}">
+          <div><div class="name-cell" style="font-size:13px;">${st.name||'—'}</div><div class="sub-cell mono">${st.phone||''} &middot; ${st.direction||'—'}</div></div>
+          <span style="font-size:11px;font-weight:500;color:${finalStatusColor(st.finalStatus)};white-space:nowrap;">${finalStatusLabel(st.finalStatus)}</span>
+        </div>`;
+      }).join('');
+  recEl.querySelectorAll('.mini-row').forEach(row=>{
+    row.addEventListener('click', ()=>openStudentView(row.dataset.id));
+  });
+}
+
+function formatDateLabel(dateStr){
+  const months = ['yanvar','fevral','mart','aprel','may','iyun','iyul','avgust','sentabr','oktabr','noyabr','dekabr'];
+  const d = new Date(dateStr+'T00:00:00');
+  return `${d.getDate()}-${months[d.getMonth()]}`;
+}
+
+function renderDailyPlan(){
+  const todayD = new Date(); todayD.setHours(0,0,0,0);
+  const tomorrowD = new Date(todayD); tomorrowD.setDate(tomorrowD.getDate()+1);
+  const pad = n=>String(n).padStart(2,'0');
+  const toISO = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  const todayStr = toISO(todayD);
+  const tomorrowStr = toISO(tomorrowD);
+
+  const active = students.filter(st=>st.finalStatus!=='rad-etdi' && st.finalStatus!=='tolangan');
+  const groups = {};
+  const noDate = [];
+
+  active.forEach(st=>{
+    if(!st.nextAction){ noDate.push(st); return; }
+    let key;
+    if(st.nextAction < todayStr) key = 'overdue';
+    else if(st.nextAction === todayStr) key = 'today';
+    else if(st.nextAction === tomorrowStr) key = 'tomorrow';
+    else key = st.nextAction;
+    (groups[key] = groups[key] || []).push(st);
+  });
+
+  const futureDates = Object.keys(groups).filter(k=>!['overdue','today','tomorrow'].includes(k)).sort();
+  const orderedKeys = ['overdue','today','tomorrow', ...futureDates];
+
+  const labelFor = (key)=>{
+    if(key==='overdue') return {text:"Muddati o'tgan", color:'var(--brick)'};
+    if(key==='today') return {text:'Bugun', color:'var(--amber)'};
+    if(key==='tomorrow') return {text:'Ertaga', color:'var(--navy)'};
+    return {text: formatDateLabel(key), color:'var(--ink-soft)'};
+  };
+
+  const rowHtml = st => `
+    <div class="mini-row" data-id="${st.id}">
+      <div>
+        <div class="name-cell" style="font-size:13px;">${st.name||'—'}</div>
+        <div class="sub-cell mono">${st.phone||''} &middot; ${st.direction||'—'}</div>
+      </div>
+      <span style="font-size:11px;font-weight:500;color:${finalStatusColor(st.finalStatus)};white-space:nowrap;">${finalStatusLabel(st.finalStatus)}</span>
+    </div>`;
+
+  let html = '';
+  orderedKeys.forEach(key=>{
+    const list = groups[key];
+    if(!list || list.length===0) return;
+    const lbl = labelFor(key);
+    html += `
+      <div class="table-wrap home-card" style="margin-bottom:16px;">
+        <h3 class="card-title" style="color:${lbl.color};">${lbl.text} <span class="card-title-sub">(${list.length})</span></h3>
+        ${list.map(rowHtml).join('')}
+      </div>`;
+  });
+
+  if(noDate.length>0){
+    html += `
+      <div class="table-wrap home-card" style="margin-bottom:16px;">
+        <h3 class="card-title" style="color:var(--ink-soft);">Sana belgilanmagan <span class="card-title-sub">(${noDate.length})</span></h3>
+        ${noDate.map(rowHtml).join('')}
+      </div>`;
+  }
+
+  if(!html){
+    html = `<div class="table-wrap"><div class="empty" style="padding:40px 20px;">Hozircha rejalashtirilgan lid yo'q.</div></div>`;
+  }
+
+  const container = document.getElementById('daily-plan-content');
+  container.innerHTML = html;
+  container.querySelectorAll('.mini-row').forEach(row=>{
+    row.addEventListener('click', ()=>openStudentView(row.dataset.id));
+  });
+}
+
+function renderPaidView(){
+  const paidStudents = students.filter(st=>st.finalStatus==='tolangan');
+  const totalSum = paidStudents.reduce((a,st)=>a+(Number(st.paidTotal)||0),0);
+  const avgSum = paidStudents.length ? Math.round(totalSum/paidStudents.length) : 0;
+  document.getElementById('stats-strip-paid').innerHTML = `
+    <div class="stat"><div class="stat-label">Jami to'langanlar</div><div class="stat-value forest">${paidStudents.length}</div></div>
+    <div class="stat"><div class="stat-label">Yig'ilgan summa</div><div class="stat-value">${fmt(totalSum)}</div></div>
+    <div class="stat"><div class="stat-label">O'rtacha to'lov</div><div class="stat-value">${fmt(avgSum)}</div></div>
+  `;
+
+  const tbody = document.getElementById('paid-table-body');
+  document.getElementById('paid-empty-state').style.display = paidStudents.length===0 ? 'block' : 'none';
+  tbody.innerHTML = paidStudents.map(st=>`
+    <tr class="row" data-id="${st.id}">
+      <td><div class="name-cell">${st.name||'—'}</div></td>
+      <td>${st.direction||'—'}</td>
+      <td class="mono" style="font-size:12.5px;">${fmt(Number(st.paidTotal)||0)}</td>
+      <td class="mono" style="font-size:12.5px;">${st.contractNumber||'—'}</td>
+      <td class="mono" style="font-size:12.5px;white-space:nowrap;">${st.nextAction||'—'}</td>
+    </tr>
+  `).join('');
+  tbody.querySelectorAll('tr.row').forEach(tr=>{
+    tr.addEventListener('click', ()=>openStudentView(tr.dataset.id));
+  });
+}
+
+function renderDailyReport(){
+  const input = document.getElementById('report-day-input');
+  const dateStr = input.value;
+  if(!dateStr) return;
+  const active = students.filter(st=>st.finalStatus!=='rad-etdi');
+  /* "Yangi ro'yxatga olingan talabalar" — tizimga qachon kiritilganidan (createdAt) emas,
+     talaba qo'shishda belgilangan "Aloqaga chiqildi" sanasidan aniqlanadi. Shu tufayli
+     tanlangan har qanday sana (kecha, bir hafta oldin va h.k.) uchun to'g'ri natija chiqadi —
+     ma'lumot alohida saqlanmaydi, chunki har bir talabaning o'zida saqlangan sana yetarli. */
+  const registeredOnDate = active.filter(st=>st.lastContact===dateStr);
+  /* "Bugun to'lov qilgan talabalar" va "Kunlik tushum" — talaba qo'shishda
+     belgilangan "To'lov sanasi" (nextAction) tanlangan sanaga mos kelgan talabalar asosida:
+     shu talabalarning soni va "To'lanadigan summa" (paidTotal) yig'indisi. */
+  const paidOnDate = active.filter(st=>st.nextAction===dateStr);
+  const dailySum = paidOnDate.reduce((a,st)=>a+(Number(st.paidTotal)||0), 0);
+
+  document.getElementById('daily-report-stats').innerHTML = `
+    <div class="stat"><div class="stat-label">Yangi ro'yxatga olingan talabalar</div><div class="stat-value">${registeredOnDate.length}</div></div>
+    <div class="stat"><div class="stat-label">Bugun to'lov qilgan talabalar</div><div class="stat-value amber">${paidOnDate.length}</div></div>
+    <div class="stat"><div class="stat-label">Kunlik tushum</div><div class="stat-value forest">${fmt(dailySum)}</div></div>
+  `;
+
+  const listEl = document.getElementById('daily-report-list');
+  let html = '';
+  if(registeredOnDate.length){
+    html += `<div style="margin-bottom:14px;"><div class="sub-cell" style="margin-bottom:8px;font-weight:600;text-transform:uppercase;font-size:10.5px;letter-spacing:.4px;">Yangi ro'yxatga olinganlar</div>`;
+    html += registeredOnDate.map(st=>`<div class="mini-row" data-id="${st.id}"><div><div class="name-cell" style="font-size:13px;">${st.name||'—'}</div><div class="sub-cell">${st.direction||'—'}</div></div></div>`).join('');
+    html += `</div>`;
+  }
+  if(paidOnDate.length){
+    html += `<div><div class="sub-cell" style="margin-bottom:8px;font-weight:600;text-transform:uppercase;font-size:10.5px;letter-spacing:.4px;">Kiritilgan to'lovlar</div>`;
+    html += paidOnDate.map(st=>`<div class="mini-row" data-id="${st.id}"><div><div class="name-cell" style="font-size:13px;">${st.name||'—'}</div></div><span style="font-family:var(--font-mono);font-weight:600;color:var(--forest);">${fmt(Number(st.paidTotal)||0)}</span></div>`).join('');
+    html += `</div>`;
+  }
+  if(!registeredOnDate.length && !paidOnDate.length){
+    html = `<div class="empty" style="padding:30px 0;">Bu kunda faoliyat qayd etilmagan.</div>`;
+  }
+  listEl.innerHTML = html;
+  listEl.querySelectorAll('.mini-row').forEach(row=>{
+    row.addEventListener('click', ()=>openStudentView(row.dataset.id));
+  });
+}
+
+function renderMonthlyReport(){
+  const input = document.getElementById('report-month-input');
+  const monthStr = input.value;
+  if(!monthStr) return;
+  const active = students.filter(st=>st.finalStatus!=='rad-etdi');
+  /* "Jami ro'yxatga olingan talabalar" — kunlik hisobotdagi kabi, tizimga kiritilgan payt
+     (createdAt) emas, "Aloqaga chiqildi" sanasidan aniqlanadi. */
+  const addedThisMonth = active.filter(st=>(st.lastContact||'').startsWith(monthStr));
+  /* "To'lov amalga oshirgan talabalar" — shu oy ro'yxatidagilar orasidan hozircha Yakuniy
+     status "To'langan"ga o'tkazilganlar soni. */
+  const convertedThisMonth = addedThisMonth.filter(st=>st.finalStatus==='tolangan');
+  const conversionRate = addedThisMonth.length ? Math.round(convertedThisMonth.length/addedThisMonth.length*100) : 0;
+  /* "Oylik tushum" — xuddi shu (shu oy ro'yxatidan to'langan) talabalarning "To'lanadigan
+     summa" (paidTotal) maydonlaridagi umumiy yig'indisi. */
+  const monthlySum = convertedThisMonth.reduce((a,st)=>a+(Number(st.paidTotal)||0), 0);
+
+  document.getElementById('monthly-report-stats').innerHTML = `
+    <div class="stat"><div class="stat-label">Jami ro'yxatga olingan talabalar</div><div class="stat-value">${addedThisMonth.length}</div></div>
+    <div class="stat"><div class="stat-label">To'lov amalga oshirgan talabalar</div><div class="stat-value forest">${convertedThisMonth.length}</div></div>
+    <div class="stat"><div class="stat-label">Konversiya foizi</div><div class="stat-value amber">${conversionRate}%</div></div>
+    <div class="stat"><div class="stat-label">Oylik tushum</div><div class="stat-value forest">${fmt(monthlySum)}</div></div>
+  `;
+}
+
+function checkOverdueTransitions(){
+  const pad2 = n=>String(n).padStart(2,'0');
+  const now = new Date();
+  const todayISO = `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
+  let changed = false;
+  students.forEach(st=>{
+    if((st.finalStatus||'jarayonida')==='jarayonida' && st.nextAction && st.nextAction < todayISO){
+      st.finalStatus = 'kechikyapti';
+      changed = true;
+    }
+  });
+  if(changed) persist();
+}
+
+function render(){
+  checkOverdueTransitions();
+  renderFilters();
+  renderTable();
+  renderBars();
+  renderHome();
+  renderPaidView();
+  renderDailyPlan();
+  renderDailyReport();
+  renderMonthlyReport();
+}
+
+const DRAWER_FIELD_IDS = ['f-name','f-passport-series','f-passport-number','f-phone','f-score','f-direction','f-form','f-degree-stage','f-final-status','f-paid','f-total','f-contract-number','f-signed','f-lastcontact','f-nextaction','f-promised','f-notes'];
+
+function fieldOrDash(val){
+  return (val===undefined || val===null || val==='') ? '<span class="view-field-value empty-val">—</span>' : val;
+}
+
+function openStudentView(id){
+  const st = students.find(s=>s.id===id);
+  if(!st) return;
+  const s = statusOf(st);
+  const holat = displayHolat(st, s);
+  const finalCls = {jarayonida:'amber', tolangan:'forest', kechikyapti:'brick', 'rad-etdi':'slate'}[st.finalStatus||'jarayonida'];
+
+  const scroll = document.getElementById('view-drawer-scroll');
+  scroll.innerHTML = `
+    <div class="view-header">
+      <div>
+        <div class="view-header-name">${st.name||'—'}</div>
+        <div class="view-header-badges">
+          <span class="stamp ${holat.cls}">${holat.label}</span>
+          <span class="stamp ${finalCls}">${finalStatusLabel(st.finalStatus)}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="view-section">
+      <div class="view-section-head"><h3>Shaxsiy ma'lumotlar</h3><button class="view-edit-btn" data-view-edit="${st.id}">&#9998; Tahrirlash</button></div>
+      <div class="view-fields-grid">
+        <div><div class="view-field-label">Passport</div><div class="view-field-value">${fieldOrDash(formatPassportDisplay(st.passport))}</div></div>
+        <div><div class="view-field-label">Telefon</div><div class="view-field-value mono">${fieldOrDash(st.phone)}</div></div>
+        <div><div class="view-field-label">Ota/ona raqami</div><div class="view-field-value mono">${fieldOrDash(st.parentPhone && st.parentPhone.trim()!=='+998' ? st.parentPhone : '')}</div></div>
+        <div><div class="view-field-label">Manzili</div><div class="view-field-value">${fieldOrDash(st.address)}</div></div>
+      </div>
+    </div>
+
+    <div class="view-section">
+      <div class="view-section-head"><h3>Ta'lim ma'lumotlari</h3><button class="view-edit-btn" data-view-edit="${st.id}">&#9998; Tahrirlash</button></div>
+      <div class="view-fields-grid">
+        <div><div class="view-field-label">Ta'lim bosqichi</div><div class="view-field-value">${fieldOrDash(degreeLabel(st.degreeStage))}</div></div>
+        <div><div class="view-field-label">Yo'nalish</div><div class="view-field-value">${fieldOrDash(st.direction)}</div></div>
+        <div><div class="view-field-label">Ta'lim shakli</div><div class="view-field-value">${fieldOrDash(formLabel(st.studyForm))}</div></div>
+        <div><div class="view-field-label">Imtihon balli</div><div class="view-field-value mono">${fieldOrDash(st.examScore)}</div></div>
+      </div>
+    </div>
+
+    <div class="view-section">
+      <div class="view-section-head"><h3>Shartnoma va to'lov</h3><button class="view-edit-btn" data-view-edit="${st.id}">&#9998; Tahrirlash</button></div>
+      <div class="view-fields-grid">
+        <div><div class="view-field-label">Kontrakt summasi</div><div class="view-field-value mono">${fmt(Number(st.contractTotal)||17000000)} so'm</div></div>
+        <div><div class="view-field-label">To'lanadigan summa</div><div class="view-field-value mono" style="color:var(--forest);">${fmt(Number(st.paidTotal)||0)} so'm</div></div>
+        <div><div class="view-field-label">Shartnoma raqami</div><div class="view-field-value mono">${fieldOrDash(st.contractNumber && st.contractNumber!=='№' ? st.contractNumber : '')}</div></div>
+        <div><div class="view-field-label">Shartnoma imzolangan</div><div class="view-field-value">${st.contractSigned ? "Ha" : "Yo'q"}</div></div>
+      </div>
+    </div>
+
+    <div class="view-section">
+      <div class="view-section-head"><h3>Rejalashtirish</h3><button class="view-edit-btn" data-view-edit="${st.id}">&#9998; Tahrirlash</button></div>
+      <div class="view-fields-grid">
+        <div><div class="view-field-label">Aloqaga chiqildi</div><div class="view-field-value mono">${fieldOrDash(st.lastContact)}</div></div>
+        <div><div class="view-field-label">To'lov sanasi</div><div class="view-field-value mono">${fieldOrDash(st.nextAction)}</div></div>
+      </div>
+      ${st.notes ? `<div class="view-notes-box"><div class="view-field-label">Izoh</div><div class="view-field-value">${st.notes}</div></div>` : ''}
+    </div>
+  `;
+  scroll.querySelectorAll('[data-view-edit]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      closeStudentView();
+      openDrawer(btn.dataset.viewEdit);
+    });
+  });
+  document.getElementById('view-overlay').classList.remove('hidden');
+}
+function closeStudentView(){
+  document.getElementById('view-overlay').classList.add('hidden');
+}
+document.getElementById('view-close').addEventListener('click', closeStudentView);
+document.getElementById('view-overlay').addEventListener('click', (e)=>{ if(e.target.id==='view-overlay') closeStudentView(); });
+
+function openDrawer(id, readOnly){
+  editingId = id || null;
+  const st = id ? students.find(s=>s.id===id) : null;
+  document.getElementById('drawer-title').textContent = readOnly ? "Talaba ma'lumotlari (ko'rish)" : (st ? "Talaba ma'lumotlari" : "Talaba qo'shish");
+  document.getElementById('f-name').value = st?.name || '';
+  const pp = parsePassport(st?.passport);
+  document.getElementById('f-passport-series').value = pp.series;
+  document.getElementById('f-passport-number').value = pp.number;
+  document.getElementById('f-phone').value = st?.phone || '+998 ';
+  document.getElementById('f-parent-phone').value = st?.parentPhone || '+998 ';
+  document.getElementById('f-address').value = st?.address || '';
+  document.getElementById('f-score').value = st?.examScore || '';
+  document.getElementById('f-degree-stage').value = st?.degreeStage || '';
+  updateDirectionOptions();
+  document.getElementById('f-direction').value = st?.direction || '';
+  updateFormOptions();
+  document.getElementById('f-form').value = st?.studyForm || 'kunduzgi';
+  document.getElementById('f-final-status').value = st?.finalStatus || 'jarayonida';
+  document.getElementById('f-paid').value = st?.paidTotal ? groupThousands(String(st.paidTotal)) : '';
+  document.getElementById('f-total').value = st?.contractTotal ? groupThousands(String(st.contractTotal)) : '';
+  document.getElementById('f-contract-number').value = st?.contractNumber || '№';
+  document.getElementById('f-signed').checked = !!st?.contractSigned;
+  if(st){
+    document.getElementById('f-lastcontact').value = st.lastContact || '';
+    document.getElementById('f-nextaction').value = st.nextAction || '';
+  } else {
+    const pad2 = n=>String(n).padStart(2,'0');
+    const today = new Date();
+    const in2days = new Date(today); in2days.setDate(in2days.getDate()+2);
+    document.getElementById('f-lastcontact').value = `${today.getFullYear()}-${pad2(today.getMonth()+1)}-${pad2(today.getDate())}`;
+    document.getElementById('f-nextaction').value = `${in2days.getFullYear()}-${pad2(in2days.getMonth()+1)}-${pad2(in2days.getDate())}`;
+  }
+  document.getElementById('f-promised').value = '';
+  document.getElementById('f-promised').dataset.prev = 0;
+  document.getElementById('f-notes').value = st?.notes || '';
+  DRAWER_FIELD_IDS.forEach(fid=>{ document.getElementById(fid).disabled = !!readOnly; });
+  if(!readOnly){
+    updateDirectionOptions();
+    updateFormOptions();
+  }
+  /* Ro'yxatda endi bo'lmagan eski yo'nalish/ta'lim shakli qiymatini saqlab qolish — masalan,
+     ro'yxatdan olib tashlangan yo'nalishda avval ro'yxatdan o'tgan talabaning ma'lumoti
+     shu formani ochganda yo'qolib ketmasligi uchun. Har doim ENG OXIRIDA ishlaydi. */
+  ensureSelectHasLegacyValue(document.getElementById('f-direction'), st?.direction);
+  document.getElementById('f-direction').value = st?.direction || '';
+  ensureSelectHasLegacyValue(document.getElementById('f-form'), st?.studyForm, formLabel);
+  document.getElementById('f-form').value = st?.studyForm || 'kunduzgi';
+  document.getElementById('save-btn').style.display = readOnly ? 'none' : 'block';
+  document.getElementById('delete-btn').style.display = (st && !readOnly) ? 'block' : 'none';
+  document.getElementById('overlay').classList.remove('hidden');
+}
+function closeDrawer(){
+  document.getElementById('overlay').classList.add('hidden');
+  editingId = null;
+}
+
+async function saveStudent(){
+  const name = document.getElementById('f-name').value.trim();
+  if(!name){ alert("F.I.Sh. kiritilishi shart."); return; }
+  const existing = editingId ? students.find(s=>s.id===editingId) : null;
+  const data = {
+    id: editingId || uid(),
+    name,
+    passport: (()=>{ const num = document.getElementById('f-passport-number').value.replace(/\D/g,''); return num ? document.getElementById('f-passport-series').value + num : ''; })(),
+    phone: document.getElementById('f-phone').value.trim(),
+    parentPhone: document.getElementById('f-parent-phone').value.trim(),
+    address: document.getElementById('f-address').value.trim(),
+    examScore: document.getElementById('f-score').value,
+    direction: document.getElementById('f-direction').value.trim(),
+    studyForm: document.getElementById('f-form').value,
+    degreeStage: document.getElementById('f-degree-stage').value,
+    finalStatus: (()=>{
+      const paidVal = Number(document.getElementById('f-paid').value.replace(/\D/g,''))||0;
+      const totalVal = Number(document.getElementById('f-total').value.replace(/\D/g,''))||0;
+      if(totalVal > 0 && paidVal >= totalVal) return 'tolangan';
+      return document.getElementById('f-final-status').value;
+    })(),
+    paidTotal: document.getElementById('f-paid').value.replace(/\D/g,''),
+    contractTotal: document.getElementById('f-total').value.replace(/\D/g,'') || 17000000,
+    contractNumber: document.getElementById('f-contract-number').value.trim(),
+    contractSigned: document.getElementById('f-signed').checked,
+    lastContact: document.getElementById('f-lastcontact').value,
+    nextAction: document.getElementById('f-nextaction').value,
+    notes: document.getElementById('f-notes').value,
+    createdAt: existing?.createdAt || Date.now(),
+    paymentHistory: existing?.paymentHistory || []
+  };
+  const newPaymentAmt = Number(document.getElementById('f-promised').value.replace(/\D/g,''))||0;
+  if(newPaymentAmt > 0){
+    const pad2 = n=>String(n).padStart(2,'0');
+    const now = new Date();
+    const todayISO = `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
+    data.paymentHistory.push({date: todayISO, amount: newPaymentAmt});
+  }
+  const wasEditing = !!editingId;
+  if(editingId){
+    students = students.map(s=>s.id===editingId?data:s);
+  }else{
+    students.push(data);
+  }
+  await persist();
+  closeDrawer();
+  render();
+  showToast(wasEditing ? "Talaba ma'lumotlari yangilandi" : "Talaba qo'shildi", 'success');
+  if(newPaymentAmt > 0){
+    const pad2 = n=>String(n).padStart(2,'0');
+    const now = new Date();
+    const dateShort = `${pad2(now.getDate())}/${pad2(now.getMonth()+1)}`;
+    openReceiptModal(generateReceiptText(data, newPaymentAmt, dateShort));
+  }
+}
+
+/* ===== To'lov cheki matni ===== */
+const RECEIPT_ISSUER_NAME = "Bunyod Ashurov"; /* kerak bo'lsa shu ismni o'zgartiring */
+
+function splitName(fullName){
+  const parts = (fullName||'').trim().split(/\s+/).filter(Boolean);
+  return { familiya: parts[0]||'', ismi: parts.slice(1).join(' ')||'' };
+}
+
+function generateReceiptText(st, paymentAmount, dateStr){
+  const { familiya, ismi } = splitName(st.name);
+  return [
+    `Ismi: ${ismi}`,
+    `Familiya: ${familiya}`,
+    `Raqami: ${st.phone||''}`,
+    `Ota yoki ona raqami: ${st.parentPhone||''}`,
+    `Manzili: ${st.address||''}`,
+    `Passport: ${formatPassportDisplay(st.passport)}`,
+    `Yo'nalish: ${st.direction||''}`,
+    `Mutaxassisligi: ${degreeLabel(st.degreeStage)}`,
+    `Ta'lim shakli: ${formLabel(st.studyForm)}`,
+    `To'lov summasi: ${fmt(Number(st.contractTotal)||0)} so'm`,
+    `To'langan summa: ${fmt(paymentAmount)} so'm`,
+    `Shartnoma raqami: ${st.contractNumber||''}`,
+    ``,
+    `To'lov sana: ${dateStr}`,
+    `Kim to'latgani: ${RECEIPT_ISSUER_NAME}`
+  ].join('\n');
+}
+
+function openReceiptModal(text){
+  document.getElementById('receipt-text-area').value = text;
+  document.getElementById('receipt-overlay').classList.remove('hidden');
+}
+document.getElementById('receipt-close').addEventListener('click', ()=>{
+  document.getElementById('receipt-overlay').classList.add('hidden');
+});
+document.getElementById('receipt-overlay').addEventListener('click', (e)=>{
+  if(e.target.id==='receipt-overlay') document.getElementById('receipt-overlay').classList.add('hidden');
+});
+document.getElementById('receipt-copy-btn').addEventListener('click', async ()=>{
+  const ta = document.getElementById('receipt-text-area');
+  try{
+    await navigator.clipboard.writeText(ta.value);
+    showToast('Nusxalandi', 'success');
+  }catch(e){
+    ta.select();
+    document.execCommand('copy');
+    showToast('Nusxalandi', 'success');
+  }
+});
+
+document.getElementById('add-btn').addEventListener('click', ()=>openDrawer(null));
+document.getElementById('close-drawer').addEventListener('click', closeDrawer);
+document.getElementById('overlay').addEventListener('click', (e)=>{ if(e.target.id==='overlay') closeDrawer(); });
+document.getElementById('save-btn').addEventListener('click', saveStudent);
+document.getElementById('delete-btn').addEventListener('click', async ()=>{
+  if(editingId && confirm("Bu talabani o'chirmoqchimisiz?")){
+    students = students.filter(s=>s.id!==editingId);
+    await persist();
+    closeDrawer();
+    render();
+    showToast("Talaba o'chirildi", 'success');
+  }
+});
+document.getElementById('search-input').addEventListener('input', (e)=>{
+  currentSearch = e.target.value;
+  renderTable();
+});
+document.getElementById('sort-select').addEventListener('change', (e)=>{
+  currentSort = e.target.value;
+  renderTable();
+});
+
+/* 2026-yil uchun yangilangan yo'nalishlar va kontrakt narxlari ro'yxati.
+   Loyihada faqat 2 ta ta'lim shakli mavjud: kunduzgi va kechki (kechki hamma yo'nalishda mavjud emas). */
+const directionPrices = {
+  "Pedagogika": {kunduzgi:17500000, kechki:14000000},
+  "Iqtisodiyot": {kunduzgi:18000000, kechki:14000000},
+  "Turizm va mehmondo'stlik": {kunduzgi:16000000, kechki:14000000},
+  "Boshlang'ich ta'lim": {kunduzgi:16000000, kechki:13000000},
+  "Psixologiya": {kunduzgi:16000000},
+  "Tarix": {kunduzgi:16000000, kechki:10000000},
+  "Dasturiy injiniring": {kunduzgi:17000000, kechki:15000000},
+  "Logistika": {kunduzgi:17000000},
+  "Marketing": {kunduzgi:16000000},
+  "Kompyuter injiniringi": {kunduzgi:18000000},
+  "Maktabgacha ta'lim": {kunduzgi:16000000},
+  "Filologiya va tillarni o'qitish: ingliz tili": {kunduzgi:16500000},
+  "Filologiya va tillarni o'qitish: nemis tili": {kunduzgi:16500000},
+  "Filologiya va tillarni o'qitish: xitoy tili": {kunduzgi:16500000},
+  "Filologiya va tillarni o'qitish: o'zbek tili": {kunduzgi:16500000},
+  "Inson resurslarini boshqarish": {kunduzgi:17000000},
+  "Bank ishi": {kunduzgi:17500000},
+  "Buxgalteriya hisobi": {kunduzgi:17500000},
+  "Soliqlar va soliqqa tortish": {kunduzgi:17000000},
+  "Jahon iqtisodiyoti va xalqaro iqtisodiy munosabatlar": {kunduzgi:18000000}
+};
+
+/* ===== Kengaytirilgan qidiruv paneli ===== */
+document.getElementById('adv-direction').innerHTML += Object.keys(directionPrices).map(d=>`<option>${d}</option>`).join('');
+document.getElementById('adv-filter-toggle').addEventListener('click', ()=>{
+  const panel = document.getElementById('adv-filter-panel');
+  panel.style.display = panel.style.display==='none' ? 'block' : 'none';
+});
+document.getElementById('adv-apply-btn').addEventListener('click', ()=>{
+  advDirection = document.getElementById('adv-direction').value;
+  advFinalStatus = document.getElementById('adv-final-status').value;
+  advDateFrom = document.getElementById('adv-date-from').value;
+  advDateTo = document.getElementById('adv-date-to').value;
+  renderTable();
+});
+document.getElementById('adv-reset-btn').addEventListener('click', ()=>{
+  document.getElementById('adv-direction').value = '';
+  document.getElementById('adv-final-status').value = '';
+  document.getElementById('adv-date-from').value = '';
+  document.getElementById('adv-date-to').value = '';
+  advDirection = ''; advFinalStatus = ''; advDateFrom = ''; advDateTo = '';
+  renderTable();
+});
+
+function getCurrentPriceMap(){
+  return directionPrices;
+}
+function getCurrentDirectionList(){
+  return Object.keys(directionPrices);
+}
+function updateDirectionOptions(){
+  const select = document.getElementById('f-direction');
+  const stage = document.getElementById('f-degree-stage').value;
+  if(!stage){
+    select.innerHTML = '<option value="">Avval ta\'lim bosqichini tanlang</option>';
+    select.value = '';
+    select.disabled = true;
+    return;
+  }
+  if(stage === 'perevod'){
+    select.innerHTML = '<option value="">Perevod uchun yo\'nalishlar hali belgilanmagan</option>';
+    select.value = '';
+    select.disabled = true;
+    return;
+  }
+  select.disabled = false;
+  const currentVal = select.value;
+  const list = getCurrentDirectionList();
+  select.innerHTML = '<option value="">Tanlang</option>' + list.map(d=>`<option>${d}</option>`).join('');
+  select.value = list.includes(currentVal) ? currentVal : '';
+}
+
+const FORM_LABELS = {kunduzgi:'Kunduzgi', kechki:'Kechki'};
+function getAvailableForms(dir){
+  const entry = getCurrentPriceMap()[dir];
+  if(!entry) return ['kunduzgi','kechki'];
+  const forms = [];
+  if(entry.kunduzgi) forms.push('kunduzgi');
+  if(entry.kechki) forms.push('kechki');
+  return forms.length ? forms : ['kunduzgi'];
+}
+/* Eski (ro'yxatda endi bo'lmagan) yo'nalish/shakl qiymatini saqlab qolgan talabalar uchun:
+   select ro'yxatiga mos option topilmasa, ma'lumot saqlash vaqtida yo'qolib ketmasligi uchun
+   o'sha eski qiymatni ro'yxat oxiriga alohida belgi bilan qo'shib qo'yamiz. */
+function ensureSelectHasLegacyValue(selectEl, value, labelFn){
+  if(!value) return;
+  const exists = Array.from(selectEl.options).some(o=>o.value===value);
+  if(!exists){
+    const opt = document.createElement('option');
+    opt.value = value;
+    opt.textContent = (labelFn ? (labelFn(value)||value) : value) + " (joriy ro'yxatda yo'q)";
+    selectEl.appendChild(opt);
+  }
+}
+function updateFormOptions(){
+  const stage = document.getElementById('f-degree-stage').value;
+  const dir = document.getElementById('f-direction').value;
+  const formSelect = document.getElementById('f-form');
+  if(!stage || !dir){
+    formSelect.innerHTML = '';
+    formSelect.disabled = true;
+    return;
+  }
+  formSelect.disabled = false;
+  const available = getAvailableForms(dir);
+  const currentVal = formSelect.value;
+  formSelect.innerHTML = available.map(f=>`<option value="${f}">${FORM_LABELS[f]||f}</option>`).join('');
+  formSelect.value = available.includes(currentVal) ? currentVal : available[0];
+}
+
+function applyDirectionPrice(){
+  updateDirectionOptions();
+  updateFormOptions();
+  const dir = document.getElementById('f-direction').value;
+  const form = document.getElementById('f-form').value;
+  const price = getCurrentPriceMap()[dir]?.[form];
+  if(price){
+    document.getElementById('f-total').value = groupThousands(String(price));
+    checkAutoFinalize();
+  }
+}
+document.getElementById('f-direction').addEventListener('change', applyDirectionPrice);
+document.getElementById('f-form').addEventListener('change', applyDirectionPrice);
+document.getElementById('f-score').addEventListener('input', applyDirectionPrice);
+document.getElementById('f-degree-stage').addEventListener('change', applyDirectionPrice);
+
+attachMoneyMask(document.getElementById('f-paid'));
+attachMoneyMask(document.getElementById('f-total'));
+attachMoneyMask(document.getElementById('f-promised'));
+
+const newPaymentInput = document.getElementById('f-promised');
+newPaymentInput.addEventListener('input', ()=>{
+  const prev = Number(newPaymentInput.dataset.prev)||0;
+  const cur = Number(newPaymentInput.value.replace(/\D/g,''))||0;
+  const delta = cur - prev;
+  const paidEl = document.getElementById('f-paid');
+  const curPaid = Number(paidEl.value.replace(/\D/g,''))||0;
+  const newPaid = curPaid + delta;
+  paidEl.value = newPaid>0 ? groupThousands(String(newPaid)) : '';
+  newPaymentInput.dataset.prev = cur;
+  checkAutoFinalize();
+});
+
+function checkAutoFinalize(){
+  const paid = Number(document.getElementById('f-paid').value.replace(/\D/g,''))||0;
+  const total = Number(document.getElementById('f-total').value.replace(/\D/g,''))||0;
+  if(total > 0 && paid >= total){
+    document.getElementById('f-final-status').value = 'tolangan';
+  }
+}
+document.getElementById('f-paid').addEventListener('input', checkAutoFinalize);
+document.getElementById('f-total').addEventListener('input', checkAutoFinalize);
+
+document.getElementById('f-passport-number').addEventListener('input', (e)=>{
+  e.target.value = e.target.value.replace(/\D/g,'');
+});
+
+document.getElementById('f-lastcontact').addEventListener('change', (e)=>{
+  if(!e.target.value) return;
+  const d = new Date(e.target.value + 'T00:00:00');
+  d.setDate(d.getDate() + 2);
+  const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), day = String(d.getDate()).padStart(2,'0');
+  document.getElementById('f-nextaction').value = `${y}-${m}-${day}`;
+});
+
+const contractNumberInput = document.getElementById('f-contract-number');
+function updateContractNumberDisplay(){
+  const digits = contractNumberInput.value.replace(/\D/g,'').slice(0,14);
+  contractNumberInput.value = '№' + digits;
+}
+contractNumberInput.addEventListener('input', ()=>{
+  updateContractNumberDisplay();
+  contractNumberInput.setSelectionRange(contractNumberInput.value.length, contractNumberInput.value.length);
+});
+contractNumberInput.addEventListener('keydown', (e)=>{
+  if((e.key==='Backspace' || e.key==='Delete') && contractNumberInput.selectionStart<=1 && contractNumberInput.selectionEnd<=1){
+    e.preventDefault();
+  }
+});
+contractNumberInput.addEventListener('focus', ()=>{
+  if(!contractNumberInput.value) contractNumberInput.value = '№';
+});
+
+const phoneInput = document.getElementById('f-phone');
+function formatUzPhone(raw){
+  let digits = raw.replace(/\D/g,'');
+  if(digits.startsWith('998')) digits = digits.slice(3);
+  digits = digits.slice(0,9);
+  let out = '+998';
+  if(digits.length>0) out += ' '+digits.slice(0,2);
+  if(digits.length>2) out += ' '+digits.slice(2,5);
+  if(digits.length>5) out += ' '+digits.slice(5,7);
+  if(digits.length>7) out += ' '+digits.slice(7,9);
+  return out;
+}
+phoneInput.addEventListener('input', ()=>{
+  phoneInput.value = formatUzPhone(phoneInput.value);
+  phoneInput.setSelectionRange(phoneInput.value.length, phoneInput.value.length);
+});
+phoneInput.addEventListener('keydown', (e)=>{
+  if((e.key==='Backspace' || e.key==='Delete') && phoneInput.selectionStart<=5 && phoneInput.selectionEnd<=5){
+    e.preventDefault();
+  }
+});
+phoneInput.addEventListener('focus', ()=>{
+  if(!phoneInput.value) phoneInput.value = '+998 ';
+});
+
+const parentPhoneInput = document.getElementById('f-parent-phone');
+parentPhoneInput.addEventListener('input', ()=>{
+  parentPhoneInput.value = formatUzPhone(parentPhoneInput.value);
+  parentPhoneInput.setSelectionRange(parentPhoneInput.value.length, parentPhoneInput.value.length);
+});
+parentPhoneInput.addEventListener('keydown', (e)=>{
+  if((e.key==='Backspace' || e.key==='Delete') && parentPhoneInput.selectionStart<=5 && parentPhoneInput.selectionEnd<=5){
+    e.preventDefault();
+  }
+});
+parentPhoneInput.addEventListener('focus', ()=>{
+  if(!parentPhoneInput.value) parentPhoneInput.value = '+998 ';
+});
+
+function updateListPageTitle(){
+  if(currentCategory === 'complete' && currentFilter === 'rad-etdi'){
+    document.getElementById('list-page-title').textContent = 'Arxiv arizalar';
+    document.getElementById('list-page-sub').textContent = 'Rad etilgan, arxivga o\'tkazilgan arizalar.';
+    return;
+  }
+  const titles = {
+    complete: ["Talabalar ro'yxati", "Barcha kerakli ma'lumotlari to'liq kiritilgan, faol talabalar."],
+    incomplete: ["Chala arizalar", "Asosiy ma'lumotlari (passport, yo'nalish, telefon yoki ball) to'liq kiritilmagan arizalar."]
+  };
+  const t = titles[currentCategory] || titles.complete;
+  document.getElementById('list-page-title').textContent = t[0];
+  document.getElementById('list-page-sub').textContent = t[1];
+}
+
+function switchView(view, category, clickedItem){
+  document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+  if(clickedItem){
+    clickedItem.classList.add('active');
+  } else {
+    const navItem = document.querySelector(`.nav-item[data-view="${view}"]`);
+    if(navItem) navItem.classList.add('active');
+  }
+  document.getElementById('view-home').style.display = view==='home' ? 'block':'none';
+  document.getElementById('view-list').style.display = view==='list' ? 'block':'none';
+  document.getElementById('view-daily').style.display = view==='daily' ? 'block':'none';
+  document.getElementById('view-reports').style.display = view==='reports' ? 'block':'none';
+  document.getElementById('view-paid').style.display = view==='paid' ? 'block':'none';
+  document.getElementById('view-stats').style.display = view==='stats' ? 'block':'none';
+  document.getElementById('export-pdf-btn').style.display = view==='stats' ? 'flex' : 'none';
+  if(view === 'list'){
+    if(category === 'rejected'){
+      currentCategory = 'complete';
+      currentFilter = 'rad-etdi';
+    } else {
+      currentCategory = category || 'complete';
+      currentFilter = 'all';
+    }
+    updateListPageTitle();
+  }
+}
+document.querySelectorAll('.nav-item:not(.nav-parent)').forEach(item=>{
+  item.addEventListener('click', ()=>{
+    switchView(item.dataset.view, item.dataset.category, item);
+    render();
+  });
+});
+document.getElementById('nav-arizalar-toggle').addEventListener('click', ()=>{
+  const submenu = document.getElementById('nav-arizalar-submenu');
+  const chevron = document.getElementById('nav-arizalar-chevron');
+  const isOpen = submenu.style.display !== 'none';
+  submenu.style.display = isOpen ? 'none' : 'block';
+  chevron.classList.toggle('open', !isOpen);
+});
+
+/* ===== AmoCRM integratsiyasi ===== */
+const CRM_CONFIG_KEY = 'crm-config';
+
+function loadCrmConfig(){
+  try{
+    const raw = localStorage.getItem(CRM_CONFIG_KEY);
+    return raw ? JSON.parse(raw) : {subdomain:'', token:''};
+  }catch(e){ return {subdomain:'', token:''}; }
+}
+function saveCrmConfig(cfg){
+  try{ localStorage.setItem(CRM_CONFIG_KEY, JSON.stringify(cfg)); }catch(e){}
+}
+
+function openCrmModal(){
+  const cfg = loadCrmConfig();
+  document.getElementById('crm-subdomain').value = cfg.subdomain || '';
+  document.getElementById('crm-token').value = cfg.token || '';
+  document.getElementById('crm-status').textContent = '';
+  document.getElementById('crm-overlay').classList.remove('hidden');
+}
+function closeCrmModal(){
+  document.getElementById('crm-overlay').classList.add('hidden');
+}
+
+function findFieldValue(customFields, candidates){
+  if(!Array.isArray(customFields)) return '';
+  for(const cf of customFields){
+    const fname = (cf.field_name||'').trim().toLowerCase();
+    if(candidates.includes(fname)){
+      const v = cf.values && cf.values[0] ? cf.values[0].value : '';
+      return v!=null ? String(v) : '';
+    }
+  }
+  return '';
+}
+
+function mapStudyForm(raw){
+  const r = (raw||'').toLowerCase();
+  if(r.includes('masofaviy')) return 'masofaviy';
+  if(r.includes('kechki')) return 'kechki';
+  return 'kunduzgi';
+}
+
+function mapDegreeStage(qabulTuri){
+  const r = (qabulTuri||'').toLowerCase();
+  if(r.includes('perevod')) return 'perevod';
+  if(r.includes('ikkinchi') || r.includes('2-')) return 'ikkinchi-mutaxassislik';
+  return 'bakalavr';
+}
+
+function leadToStudent(lead){
+  const cf = lead.custom_fields_values || [];
+  const familya = findFieldValue(cf, ['familya','familiya']);
+  const ism = findFieldValue(cf, ['ism']);
+  const otasiniIsmi = findFieldValue(cf, ["otasini ismi","otasining ismi","sharifi"]);
+  let name = [familya, ism, otasiniIsmi].filter(Boolean).join(' ').trim();
+  if(!name) name = lead.name || '';
+
+  const rawPhone = findFieldValue(cf, ['telefon raqami','telefon','phone']);
+  const passportSeries = findFieldValue(cf, ['passport seriya','pasport seriya']);
+  const passportNumber = findFieldValue(cf, ['pasport raqami','passport raqami']);
+  const passport = [passportSeries, passportNumber].filter(Boolean).join(' ').trim();
+
+  const direction = findFieldValue(cf, ["ta'lim yo'nalishi","yo'nalish","yonalish"]);
+  const studyFormRaw = findFieldValue(cf, ["ta'lim shakli"]);
+  const examScore = findFieldValue(cf, ['imtihon','imtihon balli']);
+  const contractNumber = findFieldValue(cf, ['shartnoma raqami']);
+  const qabulTuri = findFieldValue(cf, ['qabul turi']);
+
+  return {
+    id: uid(),
+    name: name || "Noma'lum",
+    phone: rawPhone ? formatUzPhone(rawPhone) : '+998 ',
+    passport,
+    examScore,
+    direction,
+    studyForm: mapStudyForm(studyFormRaw),
+    degreeStage: mapDegreeStage(qabulTuri),
+    paidTotal: '',
+    contractTotal: lead.price ? String(lead.price) : '',
+    contractSigned: false,
+    contractNumber,
+    lastContact: '',
+    nextAction: '',
+    notes: `AmoCRM lead #${lead.id} orqali import qilindi.`,
+    createdAt: Date.now(),
+    crmLeadId: lead.id
+  };
+}
+
+async function fetchAllLeads(subdomain, token, onProgress){
+  let allLeads = [];
+  let page = 1;
+  const maxPages = 20;
+  while(page <= maxPages){
+    const url = `https://${subdomain}.amocrm.ru/api/v4/leads?with=contacts&limit=250&page=${page}`;
+    const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+    if(res.status === 204) break;
+    if(!res.ok){
+      throw new Error(`API xatosi: ${res.status} ${res.statusText}`);
+    }
+    const data = await res.json();
+    const leads = (data && data._embedded && data._embedded.leads) || [];
+    allLeads = allLeads.concat(leads);
+    if(onProgress) onProgress(allLeads.length);
+    if(!data._links || !data._links.next || leads.length === 0) break;
+    page++;
+  }
+  return allLeads;
+}
+
+document.getElementById('open-crm-btn').addEventListener('click', openCrmModal);
+document.getElementById('crm-close').addEventListener('click', closeCrmModal);
+document.getElementById('crm-overlay').addEventListener('click', (e)=>{ if(e.target.id==='crm-overlay') closeCrmModal(); });
+
+document.getElementById('crm-import-btn').addEventListener('click', async ()=>{
+  const subdomain = document.getElementById('crm-subdomain').value.trim().replace(/^https?:\/\//,'').replace(/\.amocrm\.(ru|com).*$/,'');
+  const token = document.getElementById('crm-token').value.trim();
+  const statusEl = document.getElementById('crm-status');
+  if(!subdomain || !token){
+    statusEl.style.color = 'var(--brick)';
+    statusEl.textContent = "Subdomen va API tokenni kiriting.";
+    return;
+  }
+  saveCrmConfig({subdomain, token});
+  statusEl.style.color = 'var(--ink-soft)';
+  statusEl.textContent = "Ulanmoqda...";
+  try{
+    const leads = await fetchAllLeads(subdomain, token, (n)=>{
+      statusEl.textContent = `${n} ta yozuv topildi...`;
+    });
+    statusEl.textContent = `${leads.length} ta yozuv topildi, import qilinmoqda...`;
+    let added = 0, skipped = 0;
+    leads.forEach(lead=>{
+      const mapped = leadToStudent(lead);
+      const exists = students.some(s => s.crmLeadId === lead.id || (mapped.phone !== '+998 ' && s.phone === mapped.phone));
+      if(exists){ skipped++; return; }
+      students.push(mapped);
+      added++;
+    });
+    await persist();
+    render();
+    statusEl.style.color = 'var(--forest)';
+    statusEl.textContent = `Tayyor: ${added} ta yangi talaba qo'shildi, ${skipped} ta oldin mavjud bo'lgani uchun o'tkazib yuborildi.`;
+  }catch(err){
+    console.error('CRM import error', err);
+    statusEl.style.color = 'var(--brick)';
+    if(err instanceof TypeError){
+      statusEl.textContent = "Ulanib bo'lmadi — ehtimol CORS cheklovi yoki noto'g'ri subdomen. Batafsil uchun brauzer konsolini (F12 → Console) tekshiring.";
+    } else {
+      statusEl.textContent = `Xatolik: ${err.message}`;
+    }
+  }
+});
+
+/* ===== Dark Mode ===== */
+const THEME_KEY = 'ui-theme';
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('theme-icon').innerHTML = theme==='dark' ? '&#9790;' : '&#9728;';
+  document.getElementById('theme-label').textContent = theme==='dark' ? 'Tungi rejim' : 'Kunduzgi rejim';
+}
+(function initTheme(){
+  let saved = 'light';
+  try{ saved = localStorage.getItem(THEME_KEY) || 'light'; }catch(e){}
+  applyTheme(saved);
+})();
+document.getElementById('theme-toggle').addEventListener('click', ()=>{
+  const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  try{ localStorage.setItem(THEME_KEY, next); }catch(e){}
+});
+
+/* ===== PDF eksporti ===== */
+/* Diqqat: jsPDF standart shriftlari "№" belgisini va ba'zi maxsus belgilarni to'g'ri
+   chizolmaydi (matn buzilib chiqadi). Shuning uchun PDF uchun tayyorlangan matnlarda
+   bunday belgilardan qochamiz — shartnoma raqami ustuni ham shu sababli PDF shablonida yo'q. */
+function pdfSafeText(v){
+  return String(v==null ? '' : v).replace(/№/g, '').replace(/—/g, '-').trim();
+}
+
+function currentTableRowsForPdf(){
+  return students.filter(st=>st.finalStatus!=='rad-etdi').map((st,idx)=>{
+    const s = displayHolat(st, statusOf(st));
+    const contact = [pdfSafeText(st.phone)||'-', pdfSafeText(st.passport)||'-'].join('\n');
+    return {
+      no: idx+1,
+      name: pdfSafeText(st.name) || '-',
+      contact,
+      direction: pdfSafeText(st.direction) || '-',
+      date: pdfSafeText(st.nextAction) || '-',
+      status: s.label,
+      statusCls: s.cls,
+      summa: `${fmt(Number(st.paidTotal)||0)} / ${fmt(Number(st.contractTotal)||17000000)} so'm`
+    };
+  });
+}
+
+const PDF_STATUS_COLORS = {
+  forest: [34,122,80],
+  amber: [185,121,28],
+  brick: [190,59,43],
+  slate: [92,113,134]
+};
+
+document.getElementById('export-pdf-btn').addEventListener('click', ()=>{
+  try{
+    if(typeof window.jspdf === 'undefined'){ showToast("PDF kutubxonasi yuklanmadi. Internet aloqasini tekshiring.", 'error'); return; }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({orientation:'landscape'});
+    const rows = currentTableRowsForPdf();
+
+    doc.setFontSize(14);
+    doc.text("Perfect University - Talabalar ro'yxati", 14, 12);
+    doc.setFontSize(9);
+    doc.text(new Date().toLocaleDateString('uz-UZ'), 14, 18);
+
+    doc.autoTable({
+      startY:23,
+      head:[['No', 'Ism Familiya', "Telefon / Passport ma'lumotlari", "Yo'nalish", 'Sana', 'Holat (Status)', 'Summa']],
+      body: rows.map(r=>[r.no, r.name, r.contact, r.direction, r.date, r.status, r.summa]),
+      styles:{fontSize:9, cellPadding:4, valign:'middle'},
+      headStyles:{fillColor:[44,74,106], textColor:[255,255,255], fontStyle:'bold'},
+      alternateRowStyles:{fillColor:[245,243,238]},
+      columnStyles:{0:{cellWidth:12}, 5:{fontStyle:'bold'}},
+      didParseCell: (data)=>{
+        if(data.section==='body' && data.column.index===5){
+          const cls = rows[data.row.index].statusCls;
+          const color = PDF_STATUS_COLORS[cls] || [90,90,90];
+          data.cell.styles.textColor = color;
+        }
+      }
+    });
+
+    doc.save(`talabalar-royxati-${new Date().toISOString().slice(0,10)}.pdf`);
+    showToast('PDF fayli yuklab olindi', 'success');
+  }catch(e){
+    console.error(e);
+    showToast("PDF eksportida xatolik yuz berdi", 'error');
+  }
+});
+
+/* ===== To'lov cheki rasmini yuklash ===== */
+function compressReceiptImage(file, maxWidth, quality){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        let w = img.width, h = img.height;
+        if(w > maxWidth){ h = Math.round(h * maxWidth / w); w = maxWidth; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = ()=>reject(new Error("Rasmni o'qib bo'lmadi."));
+      img.src = e.target.result;
+    };
+    reader.onerror = ()=>reject(new Error("Faylni o'qib bo'lmadi."));
+    reader.readAsDataURL(file);
+  });
+}
+
+document.getElementById('receipt-file-input').addEventListener('change', async (e)=>{
+  const file = e.target.files[0];
+  const targetId = pendingReceiptId;
+  pendingReceiptId = null;
+  if(!file || !targetId) return;
+  try{
+    const compressed = await compressReceiptImage(file, 1000, 0.72);
+    const target = students.find(s=>s.id===targetId);
+    if(target){
+      target.receiptImage = compressed;
+      await persist();
+      render();
+      showToast("To'lov cheki yuklandi", 'success');
+    }
+  }catch(err){
+    console.error(err);
+    showToast("Chekni yuklashda xatolik yuz berdi", 'error');
+  }
+  e.target.value = '';
+});
+
+/* ===== Hisobotlar sanasi/oyi ===== */
+(function initReportInputs(){
+  const pad2 = n=>String(n).padStart(2,'0');
+  const now = new Date();
+  const todayISO = `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
+  const monthISO = `${now.getFullYear()}-${pad2(now.getMonth()+1)}`;
+  document.getElementById('report-day-input').value = todayISO;
+  document.getElementById('report-month-input').value = monthISO;
+})();
+document.getElementById('report-day-input').addEventListener('change', renderDailyReport);
+document.getElementById('report-month-input').addEventListener('change', renderMonthlyReport);
+
+/* ===== Profil menyusi (topbar, o'ng burchak) ===== */
+const profileDropdownEl = document.getElementById('profile-dropdown');
+document.getElementById('profile-trigger').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  profileDropdownEl.classList.toggle('hidden');
+});
+document.addEventListener('click', (e)=>{
+  if(!profileDropdownEl.classList.contains('hidden') && !document.getElementById('profile-menu').contains(e.target)){
+    profileDropdownEl.classList.add('hidden');
+  }
+});
+document.getElementById('profile-menu-logout').addEventListener('click', ()=>{
+  profileDropdownEl.classList.add('hidden');
+  document.getElementById('logout-link').click();
+});
+
+document.getElementById('profile-menu-profile').addEventListener('click', ()=>{
+  profileDropdownEl.classList.add('hidden');
+  document.getElementById('profile-info-email').value = (window.getCurrentUserEmail ? window.getCurrentUserEmail() : '') || '—';
+  document.getElementById('profile-overlay').classList.remove('hidden');
+});
+function closeProfileInfoModal(){ document.getElementById('profile-overlay').classList.add('hidden'); }
+document.getElementById('profile-info-close').addEventListener('click', closeProfileInfoModal);
+document.getElementById('profile-info-close-btn').addEventListener('click', closeProfileInfoModal);
+
+document.getElementById('profile-menu-password').addEventListener('click', ()=>{
+  profileDropdownEl.classList.add('hidden');
+  document.getElementById('pw-current').value = '';
+  document.getElementById('pw-new').value = '';
+  document.getElementById('pw-confirm').value = '';
+  document.getElementById('pw-error').textContent = '';
+  document.getElementById('password-overlay').classList.remove('hidden');
+});
+function closePasswordModal(){ document.getElementById('password-overlay').classList.add('hidden'); }
+document.getElementById('password-close').addEventListener('click', closePasswordModal);
+
+document.getElementById('pw-save-btn').addEventListener('click', async ()=>{
+  const errEl = document.getElementById('pw-error');
+  errEl.textContent = '';
+  const current = document.getElementById('pw-current').value;
+  const next = document.getElementById('pw-new').value;
+  const confirmVal = document.getElementById('pw-confirm').value;
+  if(!current || !next || !confirmVal){ errEl.textContent = "Barcha maydonlarni to'ldiring."; return; }
+  if(next.length < 6){ errEl.textContent = "Yangi parol kamida 6 ta belgidan iborat bo'lishi kerak."; return; }
+  if(next !== confirmVal){ errEl.textContent = "Yangi parollar mos kelmadi."; return; }
+  if(!window.changeUserPassword){ errEl.textContent = "Tizim hali tayyor emas, birozdan so'ng qayta urinib ko'ring."; return; }
+  const btn = document.getElementById('pw-save-btn');
+  const originalLabel = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Saqlanmoqda...';
+  const result = await window.changeUserPassword(current, next);
+  btn.disabled = false; btn.textContent = originalLabel;
+  if(result.success){
+    showToast("Parol muvaffaqiyatli o'zgartirildi", 'success');
+    closePasswordModal();
+  } else {
+    errEl.textContent = result.error;
+  }
+});
+['pw-current','pw-new','pw-confirm'].forEach(id=>{
+  document.getElementById(id).addEventListener('keydown', (e)=>{ if(e.key==='Enter') document.getElementById('pw-save-btn').click(); });
+});
+</script>
+
+<script type="module">
+/* ===== Firebase: Authentication + Firestore (shaxsiy, ko'p qurilmali kirish) ===== */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import {
+  getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
+  updatePassword, reauthenticateWithCredential, EmailAuthProvider
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import {
+  getFirestore, doc, setDoc, onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAK8NMW_FSq2uFuCx4Q0VYqm95ea8R1cBo",
+  authDomain: "bunyod-sarbon.firebaseapp.com",
+  projectId: "bunyod-sarbon",
+  storageBucket: "bunyod-sarbon.firebasestorage.app",
+  messagingSenderId: "503283375318",
+  appId: "1:503283375318:web:890cacb2a6649055543d77",
+  measurementId: "G-03G97TVQ3P"
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const auth = getAuth(fbApp);
+const db = getFirestore(fbApp);
+const STUDENTS_DOC = doc(db, 'appdata', 'students');
+
+let unsubscribeSnapshot = null;
+
+/* Ma'lumotni Firestore'dan real vaqtli o'qish — boshqa qurilmada o'zgarish bo'lsa, shu yerda ham avtomatik yangilanadi */
+function startListening(){
+  if(unsubscribeSnapshot) return;
+  unsubscribeSnapshot = onSnapshot(STUDENTS_DOC, (snap)=>{
+    students = (snap.exists() && Array.isArray(snap.data().list)) ? snap.data().list : [];
+    render();
+  }, (err)=>{
+    console.error('Firestore o\'qishda xatolik', err);
+    showToast("Ma'lumotlarni yuklashda xatolik: " + err.message, 'error');
+  });
+}
+function stopListening(){
+  if(unsubscribeSnapshot){ unsubscribeSnapshot(); unsubscribeSnapshot = null; }
+}
+
+/* persist() endi localStorage o'rniga Firestore'ga yozadi */
+window.persist = async function(){
+  try{
+    await setDoc(STUDENTS_DOC, { list: students });
+  }catch(e){
+    console.error('Saqlashda xatolik', e);
+    showToast("Saqlashda xatolik: " + e.message, 'error');
+  }
+};
+/* loadStudents() endi shart emas — onSnapshot avtomatik yuklaydi, lekin mosligi uchun qoldiramiz */
+window.loadStudents = async function(){
+  startListening();
+};
+
+/* ===== Profil menyusi uchun: joriy foydalanuvchi va parol o'zgartirish ===== */
+window.getCurrentUserEmail = function(){
+  return auth.currentUser ? auth.currentUser.email : '';
+};
+
+window.changeUserPassword = async function(currentPassword, newPassword){
+  try{
+    const user = auth.currentUser;
+    if(!user || !user.email){
+      return {success:false, error:"Foydalanuvchi aniqlanmadi. Qayta kiring."};
+    }
+    const cred = EmailAuthProvider.credential(user.email, currentPassword);
+    await reauthenticateWithCredential(user, cred);
+    await updatePassword(user, newPassword);
+    return {success:true};
+  }catch(e){
+    console.error("Parolni o'zgartirishda xatolik", e);
+    const code = e.code || '';
+    let msg = `Xatolik (${code || e.message}).`;
+    if(code === 'auth/wrong-password' || code === 'auth/invalid-credential'){
+      msg = "Joriy parol noto'g'ri.";
+    } else if(code === 'auth/weak-password'){
+      msg = "Yangi parol juda oddiy. Kuchliroq parol tanlang.";
+    } else if(code === 'auth/too-many-requests'){
+      msg = "Juda ko'p urinish. Biroz kutib qayta urinib ko'ring.";
+    } else if(code === 'auth/network-request-failed'){
+      msg = "Internet aloqasi yo'q.";
+    } else if(code === 'auth/requires-recent-login'){
+      msg = "Xavfsizlik uchun qayta kirib, so'ng urinib ko'ring.";
+    }
+    return {success:false, error:msg};
+  }
+};
+
+/* ===== Kirish/chiqish ===== */
+onAuthStateChanged(auth, (user)=>{
+  if(user){
+    revealApp();
+    startListening();
+  }else{
+    stopListening();
+    students = [];
+    showLockScreen();
+  }
+});
+
+async function tryUnlock(){
+  const email = document.getElementById('lock-login').value.trim();
+  const password = document.getElementById('lock-password').value;
+  const errEl = document.getElementById('lock-error');
+  errEl.textContent = '';
+  if(!email || !password){
+    errEl.textContent = "Email va parolni kiriting.";
+    return;
+  }
+  try{
+    await signInWithEmailAndPassword(auth, email, password);
+    document.getElementById('lock-password').value = '';
+  }catch(e){
+    console.error(e);
+    const code = e.code || '';
+    if(code === 'auth/operation-not-allowed'){
+      errEl.textContent = "Email/Password usuli hali yoqilmagan (Firebase Console → Authentication → Sign-in method).";
+    } else if(code === 'auth/user-not-found' || code === 'auth/invalid-credential'){
+      errEl.textContent = "Bunday foydalanuvchi topilmadi — email noto'g'ri yozilgan bo'lishi mumkin.";
+    } else if(code === 'auth/wrong-password'){
+      errEl.textContent = "Parol noto'g'ri.";
+    } else if(code === 'auth/too-many-requests'){
+      errEl.textContent = "Juda ko'p urinish. Biroz kutib qayta urinib ko'ring.";
+    } else if(code === 'auth/network-request-failed'){
+      errEl.textContent = "Internet aloqasi yo'q yoki Firebase'ga ulanib bo'lmadi.";
+    } else {
+      errEl.textContent = `Xatolik (${code || e.message}).`;
+    }
+  }
+}
+document.getElementById('lock-submit').addEventListener('click', tryUnlock);
+document.getElementById('lock-login').addEventListener('keydown', (e)=>{ if(e.key==='Enter') tryUnlock(); });
+document.getElementById('lock-password').addEventListener('keydown', (e)=>{ if(e.key==='Enter') tryUnlock(); });
+
+document.getElementById('logout-link').addEventListener('click', async ()=>{
+  try{ await signOut(auth); }catch(e){ console.error(e); }
+});
+</script>
+</body>
+</html>

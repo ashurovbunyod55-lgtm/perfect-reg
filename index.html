@@ -257,6 +257,12 @@
   .view-field-value{font-size:13.5px;color:var(--ink);font-weight:500;word-break:break-word;}
   .view-field-value.empty-val{color:var(--ink-soft);font-weight:400;}
   .view-notes-box{margin-top:14px;padding-top:14px;border-top:1px solid var(--line-soft);}
+  .activity-log{display:flex;flex-direction:column;}
+  .activity-log-item{display:flex;gap:10px;padding-bottom:14px;position:relative;}
+  .activity-log-item:not(:last-child)::before{content:'';position:absolute;left:3px;top:14px;bottom:0;width:1px;background:var(--line);}
+  .activity-log-dot{width:7px;height:7px;border-radius:50%;background:var(--navy-soft);flex-shrink:0;margin-top:5px;position:relative;z-index:1;}
+  .activity-log-text{font-size:13px;color:var(--ink);}
+  .activity-log-time{font-size:11px;color:var(--ink-soft);margin-top:2px;font-family:var(--font-mono);}
 
   /* Bosh sahifa dashboard */
   .home-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
@@ -264,6 +270,12 @@
   .card-title{font-family:var(--font-display);font-size:15px;font-weight:700;margin:0 0 16px;}
   .card-title-sub{font-family:var(--font-body);font-weight:400;font-size:12px;color:var(--ink-soft);}
   .donut-row{display:flex;align-items:center;gap:24px;}
+  .reminder-banner{display:flex;align-items:center;gap:12px;background:var(--gold-bg);border:1px solid var(--gold);border-radius:12px;padding:13px 18px;margin-bottom:16px;cursor:pointer;transition:filter var(--dur);}
+  .reminder-banner:hover{filter:brightness(1.05);}
+  .reminder-banner-icon{font-size:17px;flex-shrink:0;}
+  .reminder-banner-text{flex:1;font-size:13.5px;color:var(--ink);}
+  .reminder-banner-text strong{color:var(--gold);font-family:var(--font-mono);}
+  .reminder-banner-arrow{color:var(--gold);font-weight:700;flex-shrink:0;}
   .donut{width:126px;height:126px;border-radius:50%;position:relative;flex-shrink:0;filter:drop-shadow(0 4px 10px rgba(15,28,45,.15));}
   .donut-svg{position:absolute;inset:0;transform:rotate(-90deg);}
   .donut-arc{transition:stroke-width .2s ease,opacity .2s ease,filter .2s ease;}
@@ -405,6 +417,7 @@
   <div class="main">
     <div class="topbar">
       <button class="topbar-btn" id="export-pdf-btn" title="PDF formatida yuklab olish" style="display:none;">&#128196; PDF yuklab olish</button>
+      <button class="topbar-btn" id="export-excel-btn" title="Excel formatida yuklab olish" style="display:none;">&#128202; Excel yuklab olish</button>
       <div class="profile-menu" id="profile-menu">
         <button class="profile-trigger" id="profile-trigger" type="button">
           <div class="profile-trigger-text">
@@ -437,6 +450,7 @@
         <button class="btn-secondary" id="open-crm-btn" style="flex:none;width:auto;">CRM'dan olib kelish</button>
       </div>
 
+      <div id="today-reminder-banner"></div>
       <div class="stats" id="stats-strip-home"></div>
 
       <div class="home-grid">
@@ -592,6 +606,14 @@
       <p class="page-sub">Umumiy ko'rsatkichlar va to'lov taqsimoti.</p>
       <div class="table-wrap" style="padding:20px;">
         <div id="bars"></div>
+      </div>
+      <div class="table-wrap" style="padding:20px;margin-top:16px;">
+        <div class="card-title" style="margin-bottom:14px;">Yo'nalish bo'yicha daromad</div>
+        <div id="direction-revenue"></div>
+      </div>
+      <div class="table-wrap" style="padding:20px;margin-top:16px;">
+        <div class="card-title" style="margin-bottom:14px;">Yillik tendensiya</div>
+        <div id="yearly-trend"></div>
       </div>
     </div>
     </div>
@@ -758,6 +780,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script>
 /* ===== Kirish ekrani (Firebase Authentication moduli quyida boshqaradi) ===== */
@@ -991,6 +1014,88 @@ function renderBars(){
       <span class="mono" style="font-weight:500;color:var(--ink-soft);">${fmt(s.sumArchived)} so'm</span>
     </div>
   `;
+}
+
+function renderDirectionRevenue(){
+  const container = document.getElementById('direction-revenue');
+  if(!container) return;
+  const active = students.filter(st=>st.finalStatus!=='rad-etdi' && !isIncomplete(st));
+  const byDirection = {};
+  active.forEach(st=>{
+    const d = st.direction || "Ko'rsatilmagan";
+    if(!byDirection[d]) byDirection[d] = {count:0, paid:0, convertedCount:0};
+    byDirection[d].count++;
+    byDirection[d].paid += Number(st.paidTotal)||0;
+    if(st.finalStatus==='tolangan') byDirection[d].convertedCount++;
+  });
+  const rows = Object.entries(byDirection)
+    .map(([dir, v])=>({dir, ...v, rate: v.count ? Math.round(v.convertedCount/v.count*100) : 0}))
+    .sort((a,b)=>b.paid-a.paid);
+  if(!rows.length){
+    container.innerHTML = `<div class="empty" style="padding:20px 0;">Ma'lumot yo'q.</div>`;
+    return;
+  }
+  const maxPaid = Math.max(...rows.map(r=>r.paid), 1);
+  container.innerHTML = rows.map(r=>`
+    <div style="margin-bottom:16px;">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px;gap:10px;">
+        <span style="font-size:13px;color:var(--ink);font-weight:600;">${r.dir}</span>
+        <span style="font-size:11.5px;color:var(--ink-soft);white-space:nowrap;">${r.count} talaba · ${r.rate}% konversiya</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="flex:1;background:var(--line-soft);border-radius:4px;height:10px;overflow:hidden;">
+          <div style="width:${(r.paid/maxPaid*100)}%;background:var(--gold);height:100%;"></div>
+        </div>
+        <div style="font-family:var(--font-mono);font-size:12.5px;font-weight:600;white-space:nowrap;">${fmt(r.paid)} so'm</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+let trendYear = new Date().getFullYear();
+function renderYearlyTrend(){
+  const container = document.getElementById('yearly-trend');
+  if(!container) return;
+  const active = students.filter(st=>st.finalStatus!=='rad-etdi' && !isIncomplete(st));
+  const months = ['Yan','Fev','Mar','Apr','May','Iyun','Iyul','Avg','Sen','Okt','Noy','Dek'];
+  const counts = months.map((_,i)=>{
+    const monthStr = `${trendYear}-${String(i+1).padStart(2,'0')}`;
+    const registered = active.filter(st=>(st.lastContact||'').startsWith(monthStr));
+    const converted = registered.filter(st=>st.finalStatus==='tolangan');
+    return {registered: registered.length, converted: converted.length};
+  });
+  const maxV = Math.max(...counts.map(c=>c.registered), 1);
+  const W = 760, H = 220, padL = 10, padB = 26, padT = 10;
+  const chartW = W - padL - 10, chartH = H - padB - padT;
+  const groupW = chartW / 12;
+  const barW = groupW * 0.32;
+  let bars = '';
+  counts.forEach((c, i)=>{
+    const gx = padL + i*groupW + groupW*0.15;
+    const hReg = (c.registered/maxV) * chartH;
+    const hConv = (c.converted/maxV) * chartH;
+    const yReg = padT + chartH - hReg;
+    const yConv = padT + chartH - hConv;
+    bars += `<rect x="${gx.toFixed(1)}" y="${yReg.toFixed(1)}" width="${barW.toFixed(1)}" height="${hReg.toFixed(1)}" rx="2" fill="var(--navy)"></rect>`;
+    bars += `<rect x="${(gx+barW+4).toFixed(1)}" y="${yConv.toFixed(1)}" width="${barW.toFixed(1)}" height="${hConv.toFixed(1)}" rx="2" fill="var(--forest)"></rect>`;
+    bars += `<text x="${(gx+barW+2).toFixed(1)}" y="${H-8}" text-anchor="middle" font-size="10" fill="var(--ink-soft)" font-family="Inter,sans-serif">${months[i]}</text>`;
+  });
+  container.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button id="trend-prev-year" class="topbar-btn icon-only" type="button">&#8249;</button>
+        <span style="font-family:var(--font-mono);font-weight:700;font-size:14px;min-width:44px;text-align:center;">${trendYear}</span>
+        <button id="trend-next-year" class="topbar-btn icon-only" type="button">&#8250;</button>
+      </div>
+      <div style="display:flex;gap:14px;font-size:11.5px;color:var(--ink-soft);">
+        <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--navy);margin-right:5px;"></span>Ro'yxatga olingan</span>
+        <span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:var(--forest);margin-right:5px;"></span>To'langan</span>
+      </div>
+    </div>
+    <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:100%;height:auto;display:block;">${bars}</svg>
+  `;
+  document.getElementById('trend-prev-year').addEventListener('click', ()=>{ trendYear--; renderYearlyTrend(); });
+  document.getElementById('trend-next-year').addEventListener('click', ()=>{ trendYear++; renderYearlyTrend(); });
 }
 
 function renderFilters(){
@@ -1322,6 +1427,21 @@ function renderHome(){
   const todayD2 = new Date(); todayD2.setHours(0,0,0,0);
   const todayStr2 = `${todayD2.getFullYear()}-${pad2(todayD2.getMonth()+1)}-${pad2(todayD2.getDate())}`;
   const dueToday = activeStudents.filter(st=>st.finalStatus!=='tolangan' && st.nextAction===todayStr2);
+  const bannerEl = document.getElementById('today-reminder-banner');
+  if(dueToday.length > 0){
+    bannerEl.innerHTML = `
+      <div class="reminder-banner" id="reminder-banner-click">
+        <span class="reminder-banner-icon">&#128276;</span>
+        <span class="reminder-banner-text">Bugun <strong>${dueToday.length} ta</strong> talabaning to'lov kuni keldi.</span>
+        <span class="reminder-banner-arrow">&#8594;</span>
+      </div>
+    `;
+    document.getElementById('reminder-banner-click').addEventListener('click', ()=>{
+      document.querySelector('.nav-item[data-view="daily"]')?.click();
+    });
+  } else {
+    bannerEl.innerHTML = '';
+  }
   const recEl = document.getElementById('recent-list');
   recEl.innerHTML = dueToday.length===0
     ? `<div class="empty" style="padding:20px 0;">Bugun hech kim to'lov qilishi kutilmayapti.</div>`
@@ -1526,6 +1646,8 @@ function render(){
   renderFilters();
   renderTable();
   renderBars();
+  renderDirectionRevenue();
+  renderYearlyTrend();
   renderHome();
   renderPaidView();
   renderDailyPlan();
@@ -1537,6 +1659,12 @@ const DRAWER_FIELD_IDS = ['f-name','f-passport-series','f-passport-number','f-ph
 
 function fieldOrDash(val){
   return (val===undefined || val===null || val==='') ? '<span class="view-field-value empty-val">—</span>' : val;
+}
+function formatDateTime(ts){
+  if(!ts) return '';
+  const d = new Date(ts);
+  const pad2 = n=>String(n).padStart(2,'0');
+  return `${pad2(d.getDate())}.${pad2(d.getMonth()+1)}.${d.getFullYear()}, ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
 
 function openStudentView(id){
@@ -1595,6 +1723,20 @@ function openStudentView(id){
         <div><div class="view-field-label">To'lov sanasi</div><div class="view-field-value mono">${fieldOrDash(st.nextAction)}</div></div>
       </div>
       ${st.notes ? `<div class="view-notes-box"><div class="view-field-label">Izoh</div><div class="view-field-value">${st.notes}</div></div>` : ''}
+    </div>
+
+    <div class="view-section">
+      <div class="view-section-head"><h3>Faoliyat tarixi</h3></div>
+      ${(st.activityLog||[]).length ? `<div class="activity-log">${
+        [...(st.activityLog||[])].reverse().map(e=>`
+        <div class="activity-log-item">
+          <div class="activity-log-dot"></div>
+          <div class="activity-log-body">
+            <div class="activity-log-text">${e.text}</div>
+            <div class="activity-log-time">${formatDateTime(e.ts)}</div>
+          </div>
+        </div>`).join('')
+      }</div>` : `<div class="view-field-value empty-val">Hali yozuv yo'q.</div>`}
     </div>
   `;
   scroll.querySelectorAll('[data-view-edit]').forEach(btn=>{
@@ -1671,11 +1813,23 @@ async function saveStudent(){
   const name = document.getElementById('f-name').value.trim();
   if(!name){ alert("F.I.Sh. kiritilishi shart."); return; }
   const existing = editingId ? students.find(s=>s.id===editingId) : null;
+  const passportVal = (()=>{ const num = document.getElementById('f-passport-number').value.replace(/\D/g,''); return num ? document.getElementById('f-passport-series').value + num : ''; })();
+  const phoneVal = document.getElementById('f-phone').value.trim();
+  /* Takroriy ariza ogohlantirishi: shu pasport yoki telefon raqami boshqa talabada
+     (o'zidan tashqari) allaqachon mavjudligini tekshiramiz. */
+  const dup = students.find(s=>s.id!==editingId && (
+    (passportVal && s.passport===passportVal) || (phoneVal && s.phone===phoneVal)
+  ));
+  if(dup){
+    const matchedBy = (passportVal && dup.passport===passportVal) ? 'pasport' : 'telefon raqami';
+    const proceed = confirm(`Diqqat: bu ${matchedBy} "${dup.name}" ismli talabada allaqachon mavjud.\n\nBaribir saqlashni davom ettirasizmi?`);
+    if(!proceed) return;
+  }
   const data = {
     id: editingId || uid(),
     name,
-    passport: (()=>{ const num = document.getElementById('f-passport-number').value.replace(/\D/g,''); return num ? document.getElementById('f-passport-series').value + num : ''; })(),
-    phone: document.getElementById('f-phone').value.trim(),
+    passport: passportVal,
+    phone: phoneVal,
     parentPhone: document.getElementById('f-parent-phone').value.trim(),
     address: document.getElementById('f-address').value.trim(),
     examScore: document.getElementById('f-score').value,
@@ -1696,14 +1850,22 @@ async function saveStudent(){
     nextAction: document.getElementById('f-nextaction').value,
     notes: document.getElementById('f-notes').value,
     createdAt: existing?.createdAt || Date.now(),
-    paymentHistory: existing?.paymentHistory || []
+    paymentHistory: existing?.paymentHistory || [],
+    activityLog: existing?.activityLog || []
   };
+  /* ===== Faoliyat tarixi (activity log) ===== */
+  if(!existing){
+    data.activityLog.push({ts:Date.now(), text:"Talaba ro'yxatga olindi"});
+  } else if(existing.finalStatus !== data.finalStatus){
+    data.activityLog.push({ts:Date.now(), text:`Status o'zgartirildi: ${finalStatusLabel(existing.finalStatus||'jarayonida')} → ${finalStatusLabel(data.finalStatus)}`});
+  }
   const newPaymentAmt = Number(document.getElementById('f-promised').value.replace(/\D/g,''))||0;
   if(newPaymentAmt > 0){
     const pad2 = n=>String(n).padStart(2,'0');
     const now = new Date();
     const todayISO = `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
     data.paymentHistory.push({date: todayISO, amount: newPaymentAmt});
+    data.activityLog.push({ts:Date.now(), text:`To'lov kiritildi: ${fmt(newPaymentAmt)} so'm`});
   }
   const wasEditing = !!editingId;
   if(editingId){
@@ -2051,6 +2213,7 @@ function switchView(view, category, clickedItem){
   document.getElementById('view-paid').style.display = view==='paid' ? 'block':'none';
   document.getElementById('view-stats').style.display = view==='stats' ? 'block':'none';
   document.getElementById('export-pdf-btn').style.display = view==='stats' ? 'flex' : 'none';
+  document.getElementById('export-excel-btn').style.display = view==='stats' ? 'flex' : 'none';
   if(view === 'list'){
     if(category === 'rejected'){
       currentCategory = 'complete';
@@ -2319,6 +2482,40 @@ document.getElementById('export-pdf-btn').addEventListener('click', ()=>{
   }
 });
 
+document.getElementById('export-excel-btn').addEventListener('click', ()=>{
+  try{
+    if(typeof XLSX === 'undefined'){ showToast("Excel kutubxonasi yuklanmadi. Internet aloqasini tekshiring.", 'error'); return; }
+    const rows = students.filter(st=>st.finalStatus!=='rad-etdi').map((st,idx)=>{
+      const s = displayHolat(st, statusOf(st));
+      return {
+        '№': idx+1,
+        "F.I.Sh.": st.name||'',
+        "Passport": formatPassportDisplay(st.passport)||'',
+        "Telefon": st.phone||'',
+        "Yo'nalish": st.direction||'',
+        "Ta'lim shakli": formLabel(st.studyForm)||'',
+        "Ta'lim bosqichi": degreeLabel(st.degreeStage)||'',
+        "Yakuniy status": finalStatusLabel(st.finalStatus),
+        "Holat": s.label,
+        "Kontrakt summasi": Number(st.contractTotal)||0,
+        "To'lanadigan summa": Number(st.paidTotal)||0,
+        "Shartnoma raqami": st.contractNumber||'',
+        "Aloqaga chiqildi": st.lastContact||'',
+        "To'lov sanasi": st.nextAction||''
+      };
+    });
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws['!cols'] = [{wch:4},{wch:28},{wch:14},{wch:15},{wch:26},{wch:12},{wch:16},{wch:14},{wch:16},{wch:16},{wch:16},{wch:16},{wch:14},{wch:14}];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Talabalar");
+    XLSX.writeFile(wb, `talabalar-royxati-${new Date().toISOString().slice(0,10)}.xlsx`);
+    showToast('Excel fayli yuklab olindi', 'success');
+  }catch(e){
+    console.error(e);
+    showToast("Excel eksportida xatolik yuz berdi", 'error');
+  }
+});
+
 /* ===== To'lov cheki rasmini yuklash ===== */
 function compressReceiptImage(file, maxWidth, quality){
   return new Promise((resolve, reject)=>{
@@ -2449,13 +2646,13 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAK8NMW_FSq2uFuCx4Q0VYqm95ea8R1cBo",
-  authDomain: "bunyod-sarbon.firebaseapp.com",
-  projectId: "bunyod-sarbon",
-  storageBucket: "bunyod-sarbon.firebasestorage.app",
-  messagingSenderId: "503283375318",
-  appId: "1:503283375318:web:890cacb2a6649055543d77",
-  measurementId: "G-03G97TVQ3P"
+  apiKey: "AIzaSyDBHdI6AseARyMC_FQTtDcXOcCct1gAtXY",
+  authDomain: "perfect-reg.firebaseapp.com",
+  projectId: "perfect-reg",
+  storageBucket: "perfect-reg.firebasestorage.app",
+  messagingSenderId: "680992681468",
+  appId: "1:680992681468:web:61d0bf0dab4e3c8c861679",
+  measurementId: "G-N7PQT3W03T"
 };
 
 const fbApp = initializeApp(firebaseConfig);

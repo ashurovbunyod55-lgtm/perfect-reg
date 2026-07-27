@@ -3676,7 +3676,8 @@ import {
   createUserWithEmailAndPassword, sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import {
-  getFirestore, doc, getDoc, setDoc, deleteDoc, collection, query, where,
+  getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+  doc, getDoc, setDoc, deleteDoc, collection, query, where,
   onSnapshot, getDocs, writeBatch, serverTimestamp, orderBy, limit
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
@@ -3692,7 +3693,19 @@ const firebaseConfig = {
 
 const fbApp = initializeApp(firebaseConfig);
 const auth  = getAuth(fbApp);
-const db    = getFirestore(fbApp);
+/* Mahalliy kesh (IndexedDB): ma'lumot brauzerda saqlanadi, shuning uchun
+   sayt keyingi ochilishlarda serverni kutmasdan DARHOL ko'rinadi va
+   yangilanishlar fonda keladi. Internet uzilsa ham ishlayveradi.
+   Bepul — Blaze rejasi talab qilinmaydi. */
+let db;
+try{
+  db = initializeFirestore(fbApp, {
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+  });
+}catch(e){
+  console.warn('Mahalliy kesh yoqilmadi, oddiy rejim:', e.message);
+  db = getFirestore(fbApp);
+}
 
 const studentsCol = collection(db, 'students');
 const staffCol    = collection(db, 'staff');
@@ -3959,10 +3972,23 @@ window.bulkTransferOwnership = async function(ids, newOwnerEmail){
       const snap = await getDoc(doc(db,'students',id));
       if(!snap.exists()){ failed.push(id); continue; }
       const st = snap.data();
-      await setDoc(doc(db,'students',id), {
-        ...st, ownerId: target.uid, ownerEmail: target.email, ownerName: target.name,
-        agentEmail: target.email, updatedBy: window.currentUid, updatedAt: Date.now()
+      const moved = { ...st, ownerId: target.uid, ownerEmail: target.email, ownerName: target.name,
+        agentEmail: target.email, updatedBy: window.currentUid, updatedAt: Date.now() };
+      /* Noyoblik hujjatlari ham yangi egaga o'tishi shart — aks holda yangi ega
+         keyinchalik pasport/telefon/shartnomani tahrirlaganda ruxsat xatosi chiqadi. */
+      const b = writeBatch(db);
+      uniqueKeys(st).map(keyId).forEach(k => { const [c,v] = k.split('/'); b.delete(doc(db,c,v)); });
+      uniqueKeys(moved).map(keyId).forEach(k => {
+        const [c,v] = k.split('/');
+        b.set(doc(db,c,v), {
+          studentId: id, studentName: moved.name || '',
+          ownerId: target.uid, ownerName: target.name,
+          contractNumber: moved.contractNumber || '', phone: moved.phone || '',
+          passport: moved.passport || '', createdAt: st.createdAt || Date.now()
+        });
       });
+      b.set(doc(db,'students',id), moved);
+      await b.commit();
       ok++;
     }catch(e){ failed.push(id); }
   }
@@ -4096,6 +4122,12 @@ window.setStaffStatus = async function(uid, status){
   if(window.currentRole !== 'admin') return { success:false, error:'Faqat admin.' };
   const s = staffByUid(uid);
   if(!s) return { success:false, error:'Xodim topilmadi.' };
+  /* Adminni bloklash taqiqlangan: agar yagona admin bloklansa, uni qaytarib
+     faollashtira oladigan hech kim qolmaydi va tizim butunlay qulflanadi.
+     Bu qoidalar darajasida ham majburlanadi (firestore.rules). */
+  if(s.role === 'admin' && status !== 'active'){
+    return { success:false, error:"Administrator hisobini bloklab bo'lmaydi." };
+  }
   await setDoc(doc(db,'staff',uid), { ...s, status }, { merge:true });
   await window.loadAllStaff();
   await window.auditLog(status === 'disabled' ? 'operator_disabled' : 'operator_enabled', { email:s.email });

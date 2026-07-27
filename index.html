@@ -150,7 +150,9 @@
     display:flex;align-items:center;
   }
   .lock-eye:hover{background:var(--line-soft);color:var(--ink);}
-  .lock-input-wrap svg{
+  /* Faqat TO'G'RIDAN-TO'G'RI bola: aks holda ko'z tugmasi ichidagi SVG ham
+     shu qoidaga tushib, tugmadan tashqariga surilib ketadi. */
+  .lock-input-wrap > svg{
     position:absolute;left:13px;top:50%;transform:translateY(-50%);
     width:16px;height:16px;color:var(--ink-dim);pointer-events:none;
   }
@@ -674,11 +676,18 @@
     color:var(--ink-soft);text-transform:uppercase;letter-spacing:.8px;
   }
   .view-edit-btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
     padding:5px 12px;border-radius:var(--radius-xs);border:1px solid var(--line);
     background:transparent;color:var(--navy-soft);font-size:11px;font-weight:600;
     cursor:pointer;font-family:var(--font-body);white-space:nowrap;flex-shrink:0;
-    transition:all var(--dur) var(--ease);
+    transition:all var(--dur) var(--ease);line-height:1.4;
   }
+  .view-edit-btn svg{width:13px;height:13px;flex-shrink:0;}
+  /* Himoya to'ri: o'lchami aniq belgilanmagan SVG konteynerni to'ldirib yuboradi.
+     Har qanday tugma ichidagi SVG uchun standart o'lcham. */
+  button svg{width:15px;height:15px;flex-shrink:0;}
+  .lock-eye svg{position:static;transform:none;width:17px;height:17px;pointer-events:none;}
+  .lock-card button#lock-submit svg{width:16px;height:16px;}
   [data-theme="dark"] .view-edit-btn{color:var(--navy-soft);}
   .view-edit-btn:hover{background:var(--navy);border-color:var(--navy);color:#fff;}
   .view-fields-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px 18px;}
@@ -1924,7 +1933,7 @@ function renderTable(){
               <option value="kechikyapti" ${st.finalStatus==='kechikyapti'?'selected':''}>Kechiktirilgan</option>
               <option value="rad-etdi" ${st.finalStatus==='rad-etdi'?'selected':''}>Rad etilgan</option>
             </select>
-            ${st.finalStatus==='tolangan' ? `<button class="icon-btn receipt-btn" data-receipt="${st.id}" title="${st.receiptImage ? 'Chekni ko\'rish' : 'To\'lov chekini yuklash'}" style="${st.receiptImage ? 'color:var(--forest);' : ''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l3-2 3 2 3-2 3 2 3-2V2l-3 2-3-2-3 2-3-2Z"/><path d="M8 8h8M8 12h6"/></svg></button>` : ''}
+            ${st.finalStatus==='tolangan' ? `<button class="icon-btn receipt-btn" data-receipt="${st.id}" title="${(st.hasReceipt||st.receiptImage) ? 'Chekni ko\'rish' : 'To\'lov chekini yuklash'}" style="${(st.hasReceipt||st.receiptImage) ? 'color:var(--forest);' : ''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l3-2 3 2 3-2 3 2 3-2V2l-3 2-3-2-3 2-3-2Z"/><path d="M8 8h8M8 12h6"/></svg></button>` : ''}
             ${st.finalStatus==='tolangan' ? `<button class="icon-btn" data-gen-receipt="${st.id}" title="To'lov cheki matnini chiqarish"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 9l5-5 5 5"/><path d="M12 4v12"/></svg></button>` : ''}
             <button class="icon-btn edit-btn" data-edit="${st.id}" title="Tahrirlash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
             <button class="icon-btn" data-del="${st.id}" title="Butunlay o'chirish"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
@@ -1935,13 +1944,21 @@ function renderTable(){
   }).join('');
 
   tbody.querySelectorAll('[data-receipt]').forEach(btn=>{
-    btn.addEventListener('click', (e)=>{
+    btn.addEventListener('click', async (e)=>{
       e.stopPropagation();
       const target = students.find(s=>s.id===btn.dataset.receipt);
-      if(target && target.receiptImage){
+      if(target && (target.hasReceipt || target.receiptImage)){
+        /* Rasm alohida hujjatda — faqat shu yerda, kerak bo'lganda yuklanadi.
+           Eski yozuvlarda u talaba hujjatining ichida bo'lishi mumkin. */
+        let img = target.receiptImage || null;
+        if(!img && window.loadReceipt){
+          showToast("Chek yuklanmoqda...", 'info');
+          img = await window.loadReceipt(target.id);
+        }
+        if(!img){ showToast("Chek topilmadi", 'error'); return; }
         const win = window.open('', '_blank');
         if(win){
-          win.document.write(`<title>To'lov cheki — ${esc(target.name||'')}</title><body style="margin:0;background:#0B0F19;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="${target.receiptImage}" style="max-width:100%;max-height:100vh;"></body>`);
+          win.document.write(`<title>To'lov cheki — ${esc(target.name||'')}</title><body style="margin:0;background:#0B0F19;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="${img}" style="max-width:100%;max-height:100vh;"></body>`);
         }
       } else {
         pendingReceiptId = btn.dataset.receipt;
@@ -3357,15 +3374,24 @@ document.getElementById('receipt-file-input').addEventListener('change', async (
   pendingReceiptId = null;
   if(!file || !targetId) return;
   try{
-    const compressed = await compressReceiptImage(file, 1000, 0.72);
+    /* Bosqichma-bosqich siqamiz — natija hujjat chegarasiga sig'ishi kafolatlansin */
+    let compressed = null;
+    for(const [w,q] of [[1000,0.72],[850,0.6],[700,0.5],[560,0.42]]){
+      compressed = await compressReceiptImage(file, w, q);
+      if(compressed.length <= 700*1024) break;
+    }
+    if(compressed.length > 700*1024){
+      showToast("Rasm juda katta — kichikroq surat tanlang", 'error'); e.target.value=''; return;
+    }
     const target = students.find(s=>s.id===targetId);
     if(target){
       showToast("Chek yuklanmoqda...", 'info');
       if(window.uploadReceipt){
-        /* Rasm Storage'ga yuklanadi, hujjatda faqat havola qoladi */
         const up = await window.uploadReceipt(targetId, compressed);
         if(!up.success){ showToast("Chekni yuklab bo'lmadi: " + up.error, 'error'); e.target.value=''; return; }
-        target.receiptImage = up.url;
+        /* Talaba hujjatida faqat bayroq — rasmning o'zi alohida hujjatda */
+        target.hasReceipt = true;
+        delete target.receiptImage;
       }else{
         target.receiptImage = compressed;
       }
@@ -3600,9 +3626,6 @@ import {
   getFirestore, doc, getDoc, setDoc, deleteDoc, collection, query, where,
   onSnapshot, getDocs, writeBatch, serverTimestamp, orderBy, limit
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import {
-  getStorage, ref as storageRef, uploadString, getDownloadURL, deleteObject
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDBHdI6AseARyMC_FQTtDcXOcCct1gAtXY",
@@ -3617,7 +3640,6 @@ const firebaseConfig = {
 const fbApp = initializeApp(firebaseConfig);
 const auth  = getAuth(fbApp);
 const db    = getFirestore(fbApp);
-const storage = getStorage(fbApp);
 
 const studentsCol = collection(db, 'students');
 const staffCol    = collection(db, 'staff');
@@ -3714,9 +3736,14 @@ window.checkDuplicate = async function({ contractNumber, passport, phone, name, 
   }
   /* F.I.Sh. — faqat ogohlantirish, saqlashga to'sqinlik qilmaydi */
   if(name){
-    const all = await window.fetchAllStudentsOnce();
-    const same = all.find(s => s.id !== excludeId &&
-      String(s.name||'').trim().toLowerCase() === String(name).trim().toLowerCase());
+    /* Butun bazani yuklamaymiz — bu har saqlashda yuzlab o'qish sarflab,
+       saytni sekinlashtirardi va bepul kunlik limitni yeb qo'yardi.
+       O'rniga aniq nom bo'yicha maqsadli so'rov. */
+    const nq = window.currentRole === 'admin'
+      ? query(studentsCol, where('name','==',name), limit(5))
+      : query(studentsCol, where('ownerId','==',window.currentUid), where('name','==',name), limit(5));
+    const nsnap = await getDocs(nq);
+    const same = nsnap.docs.map(d=>d.data()).find(s => s.id !== excludeId);
     if(same){
       const owner = staffByUid(same.ownerId);
       return { blocked:false, warning:true, field:'F.I.Sh.',
@@ -3897,29 +3924,48 @@ window.transferOwnership = async function(studentId, newOwnerEmail){
 };
 
 /* ===================== To'lov cheki rasmi =====================
-   Rasm Firestore hujjatiga EMAS, Firebase Storage'ga yuklanadi. Hujjatda faqat
-   havola saqlanadi. Sabab: Firestore hujjati uchun qattiq 1 MiB cheklovi bor —
-   base64 rasm undan oshib ketsa, yozuv jimgina rad etilardi va chek ertasi kuni
-   yo'qolib qolardi. */
+   Rasm ALOHIDA kolleksiyada (receipts/{studentId}) saqlanadi, talaba hujjatida
+   emas. Ikki sabab:
+     1) Firestore hujjati uchun qattiq 1 MiB cheklovi bor — rasm hujjat ichida
+        bo'lsa, undan oshib ketganda yozuv jimgina rad etilardi va chek ertasi
+        kuni yo'qolardi.
+     2) Talabalar ro'yxati real vaqtda o'qiladi. Rasm hujjat ichida bo'lsa,
+        HAR SAFAR butun ro'yxat bilan birga yuklanib, saytni sekinlashtiradi.
+   Endi ro'yxatda faqat hasReceipt bayrog'i turadi, rasm esa faqat ochilganda
+   yuklanadi. Firebase Storage ishlatilmadi: u 2026-yil 3-fevraldan Blaze
+   (karta bog'langan) rejasini talab qiladi. */
+const RECEIPT_MAX_BYTES = 700 * 1024;   /* 1 MiB hujjat chegarasidan xavfsiz pastda */
+
 window.uploadReceipt = async function(studentId, dataUrl){
   try{
-    const r = storageRef(storage, `receipts/${studentId}.jpg`);
-    await uploadString(r, dataUrl, 'data_url', { contentType:'image/jpeg' });
-    const url = await getDownloadURL(r);
-    await window.auditLog('receipt_uploaded', { studentId });
-    return { success:true, url };
+    if(dataUrl.length > RECEIPT_MAX_BYTES){
+      return { success:false, error:"Rasm juda katta. Kichikroq surat tanlang." };
+    }
+    await setDoc(doc(db,'receipts',studentId), {
+      image: dataUrl, studentId,
+      ownerId: window.currentUid, updatedAt: Date.now()
+    });
+    await window.auditLog('receipt_uploaded', { studentId, bytes: dataUrl.length });
+    return { success:true };
   }catch(e){
-    console.error('Chek yuklashda xatolik', e);
+    console.error('Chek saqlashda xatolik', e);
     const code = String(e.code||'');
     let msg = e.message;
-    if(code.includes('unauthorized'))      msg = "Storage ruxsat bermadi — Storage qoidalarini (Rules) o'rnating.";
-    else if(code.includes('quota'))        msg = "Storage hajmi to'lgan.";
-    else if(code.includes('unauthenticated')) msg = "Sessiya tugagan, qayta kiring.";
+    if(code.includes('permission-denied')) msg = "Ruxsat berilmadi — Firestore qoidalarini yangilang.";
+    else if(String(msg).includes('longer than')) msg = "Rasm juda katta.";
     return { success:false, error: msg };
   }
 };
+
+window.loadReceipt = async function(studentId){
+  try{
+    const s = await getDoc(doc(db,'receipts',studentId));
+    return s.exists() ? s.data().image : null;
+  }catch(e){ console.error('Chekni o\'qishda xatolik', e); return null; }
+};
+
 window.deleteReceipt = async function(studentId){
-  try{ await deleteObject(storageRef(storage, `receipts/${studentId}.jpg`)); }catch(e){}
+  try{ await deleteDoc(doc(db,'receipts',studentId)); }catch(e){}
 };
 
 /* ===================== Xodimlar ===================== */

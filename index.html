@@ -1718,15 +1718,27 @@ async function renderEmployeesPage(){
   }catch(e){
     console.error(e);
   }
-  const staffList = window.allStaff || [];
+  /* Admin doim birinchi, keyin operatorlar ism bo'yicha */
+  const staffList = [...(window.allStaff || [])].sort((a,b)=>{
+    if(a.role === b.role) return String(a.name||'').localeCompare(String(b.name||''));
+    return a.role === 'admin' ? -1 : 1;
+  });
   if(!staffList.length){
     grid.innerHTML = `<div class="empty" style="padding:30px 0;">Hali xodimlar qo'shilmagan.</div>`;
     return;
   }
   grid.innerHTML = staffList.map(person=>{
-    const own = allStudents.filter(st=>st.agentEmail===person.email && st.finalStatus!=='rad-etdi' && !isIncomplete(st));
-    const contractCount = own.filter(st=>st.contractSigned).length;
-    const revenue = own.reduce((a,st)=>a+(Number(st.paidTotal)||0), 0);
+    /* Tushum FAQAT "To'langan" statusiga o'tkazilgan talabalardan hisoblanadi.
+       Admin kartochkasi esa butun bo'lim bo'yicha umumiy summani ko'rsatadi. */
+    const isAdminCard = person.role === 'admin';
+    const belongsToPerson = st =>
+      (st.ownerId && person.uid) ? st.ownerId === person.uid
+                                 : (st.ownerEmail || st.agentEmail) === person.email;
+    const scope = allStudents.filter(st => !isIncomplete(st) && st.finalStatus !== 'rad-etdi'
+                                        && (isAdminCard || belongsToPerson(st)));
+    const paidOnes      = scope.filter(st => st.finalStatus === 'tolangan');
+    const contractCount = scope.filter(st => st.contractSigned).length;
+    const revenue       = paidOnes.reduce((a,st)=>a+(Number(st.paidTotal)||0), 0);
     return `
       <div class="employee-card">
         <div class="employee-card-top">
@@ -1737,7 +1749,8 @@ async function renderEmployeesPage(){
           <span class="employee-card-role"${person.status==='disabled' ? ' style="background:var(--brick-bg);color:var(--brick);"' : ''}>${person.status==='disabled' ? 'Bloklangan' : (person.role==='admin' ? 'Admin' : 'Operator')}</span>
         </div>
         <div class="employee-card-stat"><span style="color:var(--ink-soft);">Tuzilgan shartnomalar</span><span class="mono" style="font-weight:600;">${contractCount} ta</span></div>
-        <div class="employee-card-stat"><span style="color:var(--ink-soft);">Jami tushum</span><span class="mono" style="font-weight:600;color:var(--forest);">${fmt(revenue)} so'm</span></div>
+        <div class="employee-card-stat"><span style="color:var(--ink-soft);">To'lov qilganlar</span><span class="mono" style="font-weight:600;">${paidOnes.length} ta</span></div>
+        <div class="employee-card-stat"><span style="color:var(--ink-soft);">${isAdminCard ? "Umumiy tushum (butun bo'lim)" : "Jami tushum"}</span><span class="mono" style="font-weight:600;color:var(--forest);">${fmt(revenue)} so'm</span></div>
         <div class="employee-card-actions">
           <button class="view-edit-btn" data-staff-edit="${esc(person.uid||person.email)}">Tahrirlash</button>
           ${person.role==='admin' ? '' : `

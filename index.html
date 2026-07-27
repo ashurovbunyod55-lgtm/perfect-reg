@@ -2147,13 +2147,23 @@ function renderHome(){
   });
   wireDonutRingHover('donut-direction');
 
+  /* Kechikkan kunlar TO'LOV SANASIDAN hisoblanadi. Avval yozuv yaratilgan
+     sanadan (createdAt) hisoblanardi — shuning uchun to'lov sanasi
+     o'zgartirilganda ham eski raqam qolib ketardi. */
+  const daysOverdue = st => {
+    if(!st.nextAction) return 0;
+    const due = new Date(st.nextAction + 'T00:00:00');
+    if(isNaN(due)) return 0;
+    const today = new Date(); today.setHours(0,0,0,0);
+    return Math.max(0, Math.round((today - due) / 86400000));
+  };
   const overdueList = activeStudents.filter(st=>!isIncomplete(st) && st.finalStatus==='kechikyapti')
-    .sort((a,b)=>(a.createdAt||0)-(b.createdAt||0));
+    .sort((a,b)=>daysOverdue(b)-daysOverdue(a));   /* eng ko'p kechikkani birinchi */
   const attnEl = document.getElementById('attention-list');
   attnEl.innerHTML = overdueList.length===0
     ? `<div class="empty" style="padding:20px 0;">Hozircha kechikkan talaba yo'q.</div>`
     : overdueList.slice(0,6).map(st=>{
-        const days = st.createdAt ? Math.floor((Date.now()-st.createdAt)/(3600*1000*24)) : 0;
+        const days = daysOverdue(st);
         return `<div class="mini-row" data-id="${st.id}">
           <div><div class="name-cell" style="font-size:13px;">${esc(st.name)}</div><div class="sub-cell mono">${esc(st.phone||'')}</div></div>
           <div class="sub-cell" style="color:var(--brick);white-space:nowrap;">${days} kun</div>

@@ -1683,7 +1683,8 @@ function renderYearlyTrend(){
 function populateSupervisorFilter(){
   const wrap = document.getElementById('supervisor-filter-wrap');
   if(!wrap) return;
-  const options = (window.allStaff||[]).filter(s=>s.role==='staff').map(s=>`<option value="${esc(s.email)}">${esc(s.name)}</option>`).join('');
+  const options = (window.allStaff||[])
+    .map(s=>`<option value="${esc(s.email)}">${esc(s.name)}${s.role==='admin' ? ' (admin)' : ''}</option>`).join('');
   wrap.innerHTML = `
     <label style="font-size:11.5px;color:var(--ink-soft);font-weight:600;">Xodim bo'yicha ko'rish:</label>
     <select id="supervisor-agent-select">
@@ -1826,6 +1827,10 @@ function renderBulkBar(){
   const bar = document.getElementById('bulk-bar');
   const isAdmin = window.currentRole === 'admin';
   document.querySelectorAll('.bulk-col').forEach(el=>{ el.style.display = isAdmin ? '' : 'none'; });
+  /* "Xodim" ustuni kataklari har chizishda qayta yaratiladi va inline
+     display:none bilan keladi — sarlavha ko'rinib, kataklar yashirin qolsa
+     ustunlar siljib ketadi. Shuning uchun har safar qayta qo'llaymiz. */
+  document.querySelectorAll('.admin-only-col').forEach(el=>{ el.style.display = isAdmin ? '' : 'none'; });
   if(!isAdmin){ bar.style.display = 'none'; bulkSelected.clear(); return; }
 
   const visible = Array.from(document.querySelectorAll('.bulk-cb')).map(c=>c.dataset.bulkId);
@@ -3355,7 +3360,15 @@ document.getElementById('receipt-file-input').addEventListener('change', async (
     const compressed = await compressReceiptImage(file, 1000, 0.72);
     const target = students.find(s=>s.id===targetId);
     if(target){
-      target.receiptImage = compressed;
+      showToast("Chek yuklanmoqda...", 'info');
+      if(window.uploadReceipt){
+        /* Rasm Storage'ga yuklanadi, hujjatda faqat havola qoladi */
+        const up = await window.uploadReceipt(targetId, compressed);
+        if(!up.success){ showToast("Chekni yuklab bo'lmadi: " + up.error, 'error'); e.target.value=''; return; }
+        target.receiptImage = up.url;
+      }else{
+        target.receiptImage = compressed;
+      }
       await persist();
       render();
       showToast("To'lov cheki yuklandi", 'success');
@@ -3399,7 +3412,7 @@ document.getElementById('profile-menu-profile').addEventListener('click', ()=>{
   profileDropdownEl.classList.add('hidden');
   document.getElementById('profile-info-email').value = (window.getCurrentUserEmail ? window.getCurrentUserEmail() : '') || '—';
   document.getElementById('profile-info-name').value = window.currentStaffName || '—';
-  document.getElementById('profile-info-role').value = window.currentRole === 'admin' ? 'Bosh admin' : (window.currentRole === 'staff' ? "Kontrakt bo'limi xodimi" : '—');
+  document.getElementById('profile-info-role').value = window.currentRole === 'admin' ? 'Bosh admin' : (window.currentRole ? "Kontrakt bo'limi operatori" : '—');
   const lastLoginTs = window.getLastLogin ? window.getLastLogin(window.getCurrentUserEmail ? window.getCurrentUserEmail() : '') : null;
   document.getElementById('profile-info-lastlogin').value = lastLoginTs ? formatDateTime(lastLoginTs) : "Birinchi marta kirish";
   document.getElementById('profile-overlay').classList.remove('hidden');
@@ -3587,6 +3600,9 @@ import {
   getFirestore, doc, getDoc, setDoc, deleteDoc, collection, query, where,
   onSnapshot, getDocs, writeBatch, serverTimestamp, orderBy, limit
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import {
+  getStorage, ref as storageRef, uploadString, getDownloadURL, deleteObject
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDBHdI6AseARyMC_FQTtDcXOcCct1gAtXY",
@@ -3601,6 +3617,7 @@ const firebaseConfig = {
 const fbApp = initializeApp(firebaseConfig);
 const auth  = getAuth(fbApp);
 const db    = getFirestore(fbApp);
+const storage = getStorage(fbApp);
 
 const studentsCol = collection(db, 'students');
 const staffCol    = collection(db, 'staff');
@@ -3877,6 +3894,32 @@ window.transferOwnership = async function(studentId, newOwnerEmail){
   });
   await window.auditLog('ownership_transfer', { studentId, from: oldOwner, to: target.name });
   return { success:true };
+};
+
+/* ===================== To'lov cheki rasmi =====================
+   Rasm Firestore hujjatiga EMAS, Firebase Storage'ga yuklanadi. Hujjatda faqat
+   havola saqlanadi. Sabab: Firestore hujjati uchun qattiq 1 MiB cheklovi bor —
+   base64 rasm undan oshib ketsa, yozuv jimgina rad etilardi va chek ertasi kuni
+   yo'qolib qolardi. */
+window.uploadReceipt = async function(studentId, dataUrl){
+  try{
+    const r = storageRef(storage, `receipts/${studentId}.jpg`);
+    await uploadString(r, dataUrl, 'data_url', { contentType:'image/jpeg' });
+    const url = await getDownloadURL(r);
+    await window.auditLog('receipt_uploaded', { studentId });
+    return { success:true, url };
+  }catch(e){
+    console.error('Chek yuklashda xatolik', e);
+    const code = String(e.code||'');
+    let msg = e.message;
+    if(code.includes('unauthorized'))      msg = "Storage ruxsat bermadi — Storage qoidalarini (Rules) o'rnating.";
+    else if(code.includes('quota'))        msg = "Storage hajmi to'lgan.";
+    else if(code.includes('unauthenticated')) msg = "Sessiya tugagan, qayta kiring.";
+    return { success:false, error: msg };
+  }
+};
+window.deleteReceipt = async function(studentId){
+  try{ await deleteObject(storageRef(storage, `receipts/${studentId}.jpg`)); }catch(e){}
 };
 
 /* ===================== Xodimlar ===================== */

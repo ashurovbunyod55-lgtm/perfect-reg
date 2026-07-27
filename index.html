@@ -2374,8 +2374,17 @@ function checkOverdueTransitions(){
   const todayISO = `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
   let changed = false;
   students.forEach(st=>{
-    if((st.finalStatus||'jarayonida')==='jarayonida' && st.nextAction && st.nextAction < todayISO){
+    const cur = st.finalStatus || 'jarayonida';
+    if(!st.nextAction) return;
+    /* Ikki tomonlama: to'lov sanasi o'tib ketsa — kechikkanga, sana kelajakka
+       ko'chirilsa (yoki bugunga) — qaytib jarayondaga. Avval faqat birinchi yo'nalish
+       ishlardi, shuning uchun sana to'g'irlangandan keyin ham "Kechiktirilgan"
+       bo'lib qolaverardi. "To'langan" va "Rad etilgan" ga tegilmaydi. */
+    if(cur === 'jarayonida' && st.nextAction < todayISO){
       st.finalStatus = 'kechikyapti';
+      changed = true;
+    } else if(cur === 'kechikyapti' && st.nextAction >= todayISO){
+      st.finalStatus = 'jarayonida';
       changed = true;
     }
   });
@@ -2650,6 +2659,25 @@ async function saveStudent(){
       ? document.getElementById('f-agent').value
       : (existing?.agentEmail || (window.getCurrentUserEmail ? window.getCurrentUserEmail() : ''))
   };
+
+  /* ===== Egalikni o'tkazish (faqat admin) =====
+     Avval forma faqat agentEmail ni o'zgartirardi, haqiqiy egalik esa ownerId
+     orqali aniqlanadi — shuning uchun o'tkazish amalda bajarilmasdi. Endi
+     tanlangan xodimning uid/name/email maydonlari ham to'liq yoziladi. */
+  if(window.currentRole === 'admin' && existing){
+    const pickedEmail = document.getElementById('f-agent').value;
+    const picked = (window.allStaff||[]).find(s=>s.email === pickedEmail);
+    const prevOwnerEmail = existing.ownerEmail || existing.agentEmail || '';
+    if(picked && pickedEmail && pickedEmail !== prevOwnerEmail){
+      const prevName = (window.allStaff||[]).find(s=>s.email===prevOwnerEmail)?.name || prevOwnerEmail || 'noma\'lum';
+      const ok = confirm(`"${name}" talabasi\n\n${prevName}  →  ${picked.name}\n\nga o'tkazilsinmi?`);
+      if(!ok) return;
+      data.ownerId    = picked.uid;
+      data.ownerEmail = picked.email;
+      data.ownerName  = picked.name;
+      data.agentEmail = picked.email;
+    }
+  }
   /* ===== Faoliyat tarixi (activity log) ===== */
   if(!existing){
     data.activityLog.push({ts:Date.now(), text:"Talaba ro'yxatga olindi"});
@@ -3814,9 +3842,13 @@ async function writeStudentAtomic(st){
        topamiz, topilmasa joriy foydalanuvchiga biriktiramiz. Aks holda maydon
        undefined bo'lib qolib, Firestore yozuvni rad etadi. */
     const legacyOwner = staffByEmail(prev.agentEmail || prev.ownerEmail || '');
+    /* st.ownerId aniq berilgan bo'lsa (admin egalikni o'tkazayotganda) — u ustun turadi */
     st.ownerId    = st.ownerId    || prev.ownerId    || legacyOwner?.uid   || window.currentUid;
     st.ownerEmail = st.ownerEmail || prev.ownerEmail || prev.agentEmail    || window.currentStaffEmail;
     st.ownerName  = st.ownerName  || prev.ownerName  || legacyOwner?.name  || window.currentStaffName;
+    /* Noyoblik hujjatlari ham yangi egaga o'tishi kerak, aks holda eski egadan
+       qolgan yozuvlar keyingi tahrirlashda ruxsat xatosiga olib keladi. */
+    if(prev.ownerId && st.ownerId !== prev.ownerId) st._ownerChanged = true;
     st.createdBy  = prev.createdBy || window.currentUid;
     st.createdAt  = prev.createdAt || now;
   }
@@ -3827,8 +3859,12 @@ async function writeStudentAtomic(st){
 
   const nowKeys  = uniqueKeys(st).map(keyId);
   const prevKeys = prev ? uniqueKeys(prev).map(keyId) : [];
-  const toAdd    = nowKeys.filter(k => !prevKeys.includes(k));
-  const toRemove = prevKeys.filter(k => !nowKeys.includes(k));
+  const ownerChanged = !!st._ownerChanged;
+  delete st._ownerChanged;
+  /* Ega o'zgarganda barcha noyoblik hujjatlari qayta yoziladi (o'chirib-yaratib),
+     shunda ular yangi egaga tegishli bo'ladi. */
+  const toAdd    = ownerChanged ? nowKeys : nowKeys.filter(k => !prevKeys.includes(k));
+  const toRemove = ownerChanged ? prevKeys : prevKeys.filter(k => !nowKeys.includes(k));
 
   const batch = writeBatch(db);
   toRemove.forEach(k => { const [c,v] = k.split('/'); batch.delete(doc(db, c, v)); });

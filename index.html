@@ -2415,9 +2415,24 @@ function fieldOrDash(val){
 function showDuplicateBlocked(res){
   const i = res.info || {};
   document.getElementById('dup-matched-by').textContent = 'Mos kelgan maydon: ' + (res.field || '—');
-  document.getElementById('dup-message').innerHTML =
-    "Bu talaba allaqachon boshqa operator tomonidan ro'yxatga olingan.<br>"
-    + "Faqat mas'ul xodim yoki administrator bu yozuvni tahrirlay oladi.";
+  /* Xabar aniq bo'lsin: kim ro'yxatga olgan, qachon va kim tahrirlay oladi. */
+  const owner   = i.ownerName || 'noma\'lum xodim';
+  const when    = i.createdAt ? formatDateTime(i.createdAt) : null;
+  const isMine  = i.ownerId && i.ownerId === window.currentUid;
+  const isAdmin = window.currentRole === 'admin';
+  let msg;
+  if(isMine){
+    msg = `Bu talaba <b>sizning ro'yxatingizda</b> allaqachon bor`
+        + (when ? ` (${esc(when)})` : '') + `.<br>`
+        + `Yangi yozuv qo'shish o'rniga mavjudini oching va tahrirlang.`;
+  }else{
+    msg = `Bu talabani <b>${esc(owner)}</b> ro'yxatga olgan`
+        + (when ? ` — ${esc(when)}` : '') + `.<br>`
+        + (isAdmin
+            ? `Siz administrator sifatida bu yozuvni tahrirlashingiz yoki boshqa xodimga o'tkazishingiz mumkin.`
+            : `Uni faqat <b>${esc(owner)}</b> yoki administrator tahrirlay oladi.`);
+  }
+  document.getElementById('dup-message').innerHTML = msg;
   document.getElementById('dup-name').textContent     = i.name || '—';
   document.getElementById('dup-contract').textContent = i.contractNumber || '—';
   document.getElementById('dup-phone').textContent    = i.phone || '—';
@@ -3757,6 +3772,8 @@ window.checkDuplicate = async function({ contractNumber, passport, phone, name, 
           phone:          student?.phone          || snap.data().phone || '—',
           passport:       student?.passport       || snap.data().passport || '—',
           ownerName:      owner?.name || snap.data().ownerName || '—',
+          ownerId:        snap.data().ownerId || null,
+          ownerEmail:     owner?.email || null,
           createdAt:      snap.data().createdAt || student?.createdAt || null
         }
       };
@@ -4192,10 +4209,19 @@ window.migrateOldData = async function(force){
   return r;
 };
 async function migrateIfNeeded(){
+  /* Bir marta bajarilgach, config/migration belgisi qo'yiladi va keyingi
+     kirishlarda butun baza qayta skanerlanmaydi — faqat bitta arzon o'qish. */
+  try{
+    const flag = await getDoc(doc(db,'config','migration'));
+    if(flag.exists() && flag.data().done) return;
+  }catch(e){ /* o'qib bo'lmasa, davom etamiz */ }
+
   const fix = await repairLegacyStudents();
   if(fix.repaired) showToast(`Eski yozuvlar tuzatildi: ${fix.repaired} ta`, 'success');
   if(fix.reasons.length) console.warn("Tuzatilmagan yozuvlar:\n" + fix.reasons.join('\n'));
   const r = await runMigration(false);
+  try{ await setDoc(doc(db,'config','migration'), { done:true, at:Date.now(), by:window.currentStaffEmail }); }
+  catch(e){ console.warn('Ko\'chirish belgisini yozib bo\'lmadi:', e.message); }
   if(r.ran){
     showToast(`Eski ma'lumotlar ko'chirildi: ${r.migrated} ta` + (r.skipped ? `, ${r.skipped} ta o'tkazib yuborildi` : ''),
               r.skipped ? 'error' : 'success');
@@ -4250,15 +4276,25 @@ onAuthStateChanged(auth, async (user) => {
     window.currentStaffEmail = me.email;
     window.currentStaffName = me.name;
 
-    await setDoc(doc(db,'staff',user.uid), { ...me, lastLogin: Date.now() }, { merge:true });
-    await window.loadAllStaff();
-    if(me.role === 'admin') await migrateIfNeeded();
-    await window.auditLog('login_success', { role: me.role });
-
+    /* Interfeys DARHOL ochiladi. Avval bu yerda 6 ta so'rov ketma-ket
+       kutilardi (lastLogin yozish, xodimlar ro'yxati, eski yozuvlarni tuzatish,
+       ko'chirish tekshiruvi, audit) — shuning uchun kirish 5-10 soniya davom
+       etardi. Endi ularning hech biri ekranni to'smaydi. */
     revealApp();
     if(window.applyRoleUI) window.applyRoleUI();
     startListening();
     startInactivityWatch();
+
+    /* Qolgan hamma narsa fonda, parallel */
+    (async ()=>{
+      try{
+        setDoc(doc(db,'staff',user.uid), { lastLogin: Date.now() }, { merge:true }).catch(()=>{});
+        window.auditLog('login_success', { role: me.role });
+        await window.loadAllStaff();
+        if(window.applyRoleUI) window.applyRoleUI();   /* xodimlar kelgach filtrni to'ldiramiz */
+        if(me.role === 'admin') await migrateIfNeeded();
+      }catch(bgErr){ console.warn('Fon vazifalarida xatolik:', bgErr); }
+    })();
   }catch(e){
     console.error(e);
     const msg = String(e.message||'');

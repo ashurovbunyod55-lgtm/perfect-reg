@@ -4094,8 +4094,12 @@ onAuthStateChanged(auth, async (user) => {
 
     /* Birinchi hisob — baza bo'sh bo'lsa, o'zi admin bo'ladi (bootstrap) */
     if(!me){
-      const anyStaff = await getDocs(query(staffCol, limit(1)));
-      if(anyStaff.empty){
+      /* Bootstrapni aniqlash uchun staff kolleksiyasini RO'YXATLAB bo'lmaydi:
+         staff hujjati yo'q foydalanuvchiga qoidalar bunga ruxsat bermaydi
+         (va bermasligi ham kerak). Buning o'rniga config/bootstrap borligini
+         tekshiramiz — u har qanday tizimga kirgan foydalanuvchiga o'qishga ochiq. */
+      const bootSnap = await getDoc(doc(db,'config','bootstrap'));
+      if(!bootSnap.exists()){
         me = { email:user.email, name:(user.email||'').split('@')[0], role:'admin',
                status:'active', createdAt:Date.now(), lastLogin:null };
         /* Admin hujjati va bootstrap belgisi BITTA batch ichida — shundan keyin
@@ -4107,7 +4111,7 @@ onAuthStateChanged(auth, async (user) => {
       }
     }
     if(!me){
-      document.getElementById('lock-error').textContent = "Sizga rol berilmagan. Administratorga murojaat qiling.";
+      document.getElementById('lock-error').textContent = "Bu hisobga rol berilmagan. Administrator sizni \"Xodimlar\" bo'limidan qo'shishi kerak.";
       await signOut(auth); return;
     }
     if(me.status === 'disabled'){
@@ -4132,7 +4136,12 @@ onAuthStateChanged(auth, async (user) => {
     startInactivityWatch();
   }catch(e){
     console.error(e);
-    document.getElementById('lock-error').textContent = "Kirishda xatolik: " + e.message;
+    const msg = String(e.message||'');
+    document.getElementById('lock-error').textContent =
+      msg.toLowerCase().includes('permission')
+        ? "Firestore ruxsat bermadi. Qoidalar (Rules) Publish qilinganini va staff kolleksiyasi holatini tekshiring."
+        : "Kirishda xatolik: " + msg;
+    console.error('Kirish jarayonidagi xatolik:', e);
   }
 });
 

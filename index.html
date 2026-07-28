@@ -643,6 +643,29 @@
   .btn-danger:hover{background:var(--brick-bg);}
   button:disabled{opacity:.55;cursor:not-allowed;transform:none !important;}
 
+  /* ===== Markaziy yuklanish indikatori ===== */
+  #app-loader{
+    position:fixed;inset:0;z-index:400;
+    display:flex;align-items:center;justify-content:center;
+    background:rgba(11,15,25,.72);backdrop-filter:blur(6px);
+    animation:fadeIn .15s var(--ease);
+  }
+  #app-loader.hidden{display:none;}
+  .loader-card{
+    display:flex;flex-direction:column;align-items:center;gap:16px;
+    background:var(--card-bg);border:1px solid var(--line);
+    border-radius:var(--radius);padding:30px 40px;box-shadow:var(--shadow-glass-lg);
+    min-width:220px;
+  }
+  .loader-ring{
+    width:38px;height:38px;border-radius:50%;
+    border:3px solid var(--line);border-top-color:var(--navy);
+    animation:loaderSpin .8s linear infinite;
+  }
+  @keyframes loaderSpin{to{transform:rotate(360deg);}}
+  .loader-text{font-size:14px;font-weight:600;color:var(--ink);text-align:center;}
+  .loader-sub{font-size:12px;color:var(--ink-soft);text-align:center;min-height:16px;}
+
   /* ===== Toast ===== */
   #toast-container{position:fixed;top:20px;right:20px;z-index:300;display:flex;flex-direction:column;gap:10px;}
   .toast{
@@ -741,10 +764,27 @@
   .view-edit-btn.danger-btn:hover{background:var(--brick);border-color:var(--brick);color:#fff;}
 
   /* ===== Supervisor filtri ===== */
-  .bulk-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
-    background:var(--primary-bg);border:1px solid rgba(124,108,251,.28);
-    border-radius:var(--radius);padding:12px 16px;margin-bottom:12px;}
-  .bulk-count{font-size:13px;font-weight:600;color:var(--navy-soft);white-space:nowrap;}
+  /* Tanlov paneli ekranga yopishtirilgan: ro'yxat uzun bo'lsa ham,
+     qayerga aylantirsangiz ham doim ko'rinib turadi. */
+  .bulk-bar{
+    position:fixed;left:50%;bottom:22px;transform:translateX(-50%);
+    z-index:180;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    background:var(--card-bg);border:1px solid rgba(124,108,251,.45);
+    border-radius:999px;padding:10px 14px 10px 20px;
+    box-shadow:0 12px 34px rgba(0,0,0,.5), 0 0 0 1px rgba(124,108,251,.12);
+    animation:bulkBarIn .22s var(--ease);max-width:min(94vw,760px);
+  }
+  @keyframes bulkBarIn{from{opacity:0;transform:translate(-50%,14px);}to{opacity:1;transform:translate(-50%,0);}}
+  .bulk-count{
+    font-size:13px;font-weight:700;color:var(--navy-soft);white-space:nowrap;
+    background:var(--primary-bg);padding:5px 12px;border-radius:999px;
+  }
+  .bulk-bar select{border-radius:999px;}
+  .bulk-bar .btn-primary,.bulk-bar .btn-secondary{border-radius:999px;padding:9px 16px;}
+  @media (max-width:640px){
+    .bulk-bar{left:8px;right:8px;transform:none;border-radius:var(--radius);justify-content:center;}
+    @keyframes bulkBarIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+  }
   td.bulk-col,th.bulk-col{padding-right:0;}
   .supervisor-filter-bar{
     display:flex;align-items:center;gap:11px;background:var(--card-bg);
@@ -792,6 +832,14 @@
   <svg class="brand-orb brand-orb-1" viewBox="0 0 26 26"><rect x="2" y="3" width="4" height="20" fill="currentColor"/><rect x="7.5" y="3" width="4" height="12.5" fill="currentColor"/><rect x="13" y="3" width="4.5" height="20" fill="currentColor"/><rect x="19" y="3" width="4" height="20" fill="currentColor"/></svg>
   <svg class="brand-orb brand-orb-2" viewBox="0 0 26 26"><rect x="2" y="3" width="4" height="20" fill="currentColor"/><rect x="7.5" y="3" width="4" height="12.5" fill="currentColor"/><rect x="13" y="3" width="4.5" height="20" fill="currentColor"/><rect x="19" y="3" width="4" height="20" fill="currentColor"/></svg>
 </div>
+<div id="app-loader" class="hidden">
+  <div class="loader-card">
+    <div class="loader-ring"></div>
+    <div class="loader-text" id="app-loader-text">Yuklanmoqda...</div>
+    <div class="loader-sub" id="app-loader-sub"></div>
+  </div>
+</div>
+
 <div id="toast-container" aria-live="polite"></div>
 <input type="file" id="receipt-file-input" accept="image/*" style="display:none;">
 <div class="lock-screen" id="lock-screen">
@@ -1409,6 +1457,33 @@ let editingId = null;
 let pendingReceiptId = null;
 
 /* ===== Toast xabarlar ===== */
+/* Markaziy yuklanish indikatori — uzoq amallarda ko'rsatiladi, shunda
+   foydalanuvchi "sayt qotib qoldi" deb o'ylamaydi. Ichma-ich chaqirilsa ham
+   to'g'ri ishlashi uchun hisoblagich bilan. */
+let __loaderDepth = 0;
+function showLoader(text, sub){
+  __loaderDepth++;
+  const el = document.getElementById('app-loader');
+  if(!el) return;
+  document.getElementById('app-loader-text').textContent = text || 'Yuklanmoqda...';
+  document.getElementById('app-loader-sub').textContent  = sub || '';
+  el.classList.remove('hidden');
+}
+function updateLoader(text, sub){
+  const t = document.getElementById('app-loader-text');
+  const s = document.getElementById('app-loader-sub');
+  if(t && text !== undefined) t.textContent = text;
+  if(s && sub  !== undefined) s.textContent = sub;
+}
+function hideLoader(force){
+  __loaderDepth = force ? 0 : Math.max(0, __loaderDepth - 1);
+  if(__loaderDepth === 0){
+    const el = document.getElementById('app-loader');
+    if(el) el.classList.add('hidden');
+  }
+}
+window.showLoader = showLoader; window.hideLoader = hideLoader; window.updateLoader = updateLoader;
+
 function showToast(message, type){
   type = type || 'success';
   const container = document.getElementById('toast-container');
@@ -2914,7 +2989,9 @@ document.getElementById('bulk-apply').addEventListener('click', async ()=>{
   if(!confirm(`${ids.length} ta talaba "${staffName}" ga o'tkazilsinmi?`)) return;
   const btn = document.getElementById('bulk-apply');
   const lbl = btn.textContent; btn.disabled = true; btn.textContent = "O'tkazilmoqda...";
+  showLoader("Talabalar o'tkazilmoqda...", `${ids.length} ta yozuv → ${staffName}`);
   const r = await window.bulkTransferOwnership(ids, email);
+  hideLoader();
   btn.disabled = false; btn.textContent = lbl;
   if(r.success){
     showToast(`${r.moved} ta talaba "${staffName}" ga o'tkazildi` + (r.failed ? `, ${r.failed} tasi o'tmadi` : ''),
@@ -3539,10 +3616,10 @@ document.getElementById('receipt-file-input').addEventListener('change', async (
     const kb = Math.round(compressed.length/1024);
     const target = students.find(s=>s.id===targetId);
     if(target){
-      showToast("Chek yuklanmoqda...", 'info');
+      showLoader("Chek yuklanmoqda...", `${kb} KB`);
       if(window.uploadReceipt){
         const up = await window.uploadReceipt(targetId, compressed);
-        if(!up.success){ showToast("Chekni yuklab bo'lmadi: " + up.error, 'error'); e.target.value=''; return; }
+        if(!up.success){ hideLoader(true); showToast("Chekni yuklab bo'lmadi: " + up.error, 'error'); e.target.value=''; return; }
         /* Talaba hujjatida faqat bayroq — rasmning o'zi alohida hujjatda */
         target.hasReceipt = true;
         delete target.receiptImage;
@@ -3645,7 +3722,9 @@ document.getElementById('migrate-btn').addEventListener('click', async ()=>{
     + "Eski nusxa o'zgarishsiz qoladi. Allaqachon mavjud yozuvlar qayta yozilmaydi.")) return;
   const btn = document.getElementById('migrate-btn');
   const lbl = btn.innerHTML; btn.disabled = true; btn.textContent = "Ko'chirilmoqda...";
+  showLoader("Eski ma'lumotlar ko'chirilmoqda...", "Bu bir necha soniya davom etishi mumkin");
   await window.migrateOldData(true);
+  hideLoader();
   btn.disabled = false; btn.innerHTML = lbl;
   renderEmployeesPage();
 });
@@ -3696,7 +3775,9 @@ document.getElementById('staff-save-btn').addEventListener('click', async ()=>{
   const btn = document.getElementById('staff-save-btn');
   const originalLabel = btn.textContent;
   btn.disabled = true; btn.textContent = "Qo'shilmoqda...";
+  showLoader("Xodim qo'shilmoqda...", email);
   const result = await window.createStaffAccount(email, password, name);
+  hideLoader();
   btn.disabled = false; btn.textContent = originalLabel;
   if(result.success){
     showToast("Xodim muvaffaqiyatli qo'shildi", 'success');
@@ -4408,12 +4489,12 @@ onAuthStateChanged(auth, async (user) => {
     }
     if(!me){
       document.getElementById('lock-error').textContent = "Bu hisobga rol berilmagan. Administrator sizni \"Xodimlar\" bo'limidan qo'shishi kerak.";
-      await signOut(auth); return;
+      hideLoader(true); await signOut(auth); return;
     }
     if(me.status === 'disabled'){
       document.getElementById('lock-error').textContent = "Hisobingiz bloklangan. Administratorga murojaat qiling.";
       await window.auditLog('login_blocked_disabled', { email: me.email });
-      await signOut(auth); return;
+      hideLoader(true); await signOut(auth); return;
     }
 
     window.currentUid = user.uid;
@@ -4429,6 +4510,7 @@ onAuthStateChanged(auth, async (user) => {
     if(window.applyRoleUI) window.applyRoleUI();
     startListening();
     startInactivityWatch();
+    hideLoader(true);
 
     /* Qolgan hamma narsa fonda, parallel */
     (async ()=>{
@@ -4441,6 +4523,7 @@ onAuthStateChanged(auth, async (user) => {
       }catch(bgErr){ console.warn('Fon vazifalarida xatolik:', bgErr); }
     })();
   }catch(e){
+    hideLoader(true);
     console.error(e);
     const msg = String(e.message||'');
     document.getElementById('lock-error').textContent =
@@ -4469,11 +4552,13 @@ async function tryUnlock(){
     errEl.textContent = `Juda ko'p noto'g'ri urinish. ${left} daqiqadan so'ng qayta urinib ko'ring.`;
     return;
   }
+  showLoader("Tizimga kirilmoqda...", "Ma'lumotlar tekshirilmoqda");
   try{
     await signInWithEmailAndPassword(auth, email, password);
     delete attempts[emailKey]; saveLoginAttempts(attempts);
     document.getElementById('lock-password').value = '';
   }catch(e){
+    hideLoader(true);
     const count = (rec && rec.blockedUntil ? 0 : (rec?.count || 0)) + 1;
     const nr = { count };
     if(count >= MAX_LOGIN_ATTEMPTS){ nr.blockedUntil = Date.now() + BLOCK_MINUTES*60000; nr.count = 0; }

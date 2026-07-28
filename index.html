@@ -990,13 +990,6 @@
       <p class="page-sub">To'lovni yakunlagan (Yakuniy status: To'langan) talabalar ro'yxati va statistikasi.</p>
 
       <div class="stats" id="stats-strip-paid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px;"></div>
-
-      <div class="bulk-bar admin-only" id="bulk-bar" style="display:none;">
-        <span class="bulk-count" id="bulk-count">0 ta tanlandi</span>
-        <select id="bulk-target" style="width:auto;min-width:200px;"></select>
-        <button class="btn-primary" id="bulk-apply" style="flex:none;width:auto;">Tanlanganlarni o'tkazish</button>
-        <button class="btn-secondary" id="bulk-clear" style="flex:none;width:auto;">Bekor qilish</button>
-      </div>
       <div class="table-wrap">
         <table>
           <thead>
@@ -1064,6 +1057,12 @@
         </div>
       </div>
 
+      <div class="bulk-bar admin-only" id="bulk-bar" style="display:none;">
+        <span class="bulk-count" id="bulk-count">0 ta tanlandi</span>
+        <select id="bulk-target" style="width:auto;min-width:200px;"></select>
+        <button class="btn-primary" id="bulk-apply" style="flex:none;width:auto;">Tanlanganlarni o'tkazish</button>
+        <button class="btn-secondary" id="bulk-clear" style="flex:none;width:auto;">Bekor qilish</button>
+      </div>
       <div class="table-wrap">
         <table>
           <thead>
@@ -1209,6 +1208,23 @@
     <div class="drawer-actions">
       <button class="btn-secondary" id="save-btn" style="background:var(--navy);color:#fff;border-color:var(--navy);">Saqlash</button>
       <button class="btn-danger" id="delete-btn" style="display:none;">O'chirish</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="receipt-view-overlay">
+  <div class="drawer" style="width:min(560px,94vw);">
+    <button class="close-x" id="receipt-view-close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <div class="drawer-scroll">
+      <h2 id="receipt-view-title">To'lov cheki</h2>
+      <div id="receipt-view-body" style="display:flex;align-items:center;justify-content:center;min-height:220px;">
+        <span style="color:var(--ink-soft);font-size:13px;">Yuklanmoqda...</span>
+      </div>
+    </div>
+    <div class="drawer-actions">
+      <button class="btn-secondary" id="receipt-view-open">Yangi oynada ochish</button>
+      <button class="btn-secondary" id="receipt-view-replace">Boshqa rasm yuklash</button>
+      <button class="btn-danger" id="receipt-view-delete">O'chirish</button>
     </div>
   </div>
 </div>
@@ -1961,18 +1977,10 @@ function renderTable(){
       e.stopPropagation();
       const target = students.find(s=>s.id===btn.dataset.receipt);
       if(target && (target.hasReceipt || target.receiptImage)){
-        /* Rasm alohida hujjatda — faqat shu yerda, kerak bo'lganda yuklanadi.
-           Eski yozuvlarda u talaba hujjatining ichida bo'lishi mumkin. */
-        let img = target.receiptImage || null;
-        if(!img && window.loadReceipt){
-          showToast("Chek yuklanmoqda...", 'info');
-          img = await window.loadReceipt(target.id);
-        }
-        if(!img){ showToast("Chek topilmadi", 'error'); return; }
-        const win = window.open('', '_blank');
-        if(win){
-          win.document.write(`<title>To'lov cheki — ${esc(target.name||'')}</title><body style="margin:0;background:#0B0F19;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="${img}" style="max-width:100%;max-height:100vh;"></body>`);
-        }
+        /* Ilova ichida ko'rsatamiz. Avval window.open ishlatilardi, lekin u
+           await'dan keyin chaqirilgani uchun brauzer bloklab, bo'sh oyna
+           ochilardi. Bu usul popup-blokerga ham, mobilga ham bog'liq emas. */
+        await openReceiptViewer(target);
       } else {
         pendingReceiptId = btn.dataset.receipt;
         document.getElementById('receipt-file-input').click();
@@ -2435,6 +2443,30 @@ function fieldOrDash(val){
 }
 /* Dublikat topilganda: spetsifikatsiya talab qilgan barcha maydonlarni
    ko'rsatadi va saqlashni to'xtatadi. */
+/* To'lov cheki ko'ruvchisi — ilova ichida */
+let currentReceiptDataUrl = null;
+let currentReceiptStudentId = null;
+
+async function openReceiptViewer(st){
+  currentReceiptStudentId = st.id;
+  currentReceiptDataUrl = null;
+  document.getElementById('receipt-view-title').textContent = "To'lov cheki — " + (st.name || '');
+  const body = document.getElementById('receipt-view-body');
+  body.innerHTML = `<span style="color:var(--ink-soft);font-size:13px;">Yuklanmoqda...</span>`;
+  document.getElementById('receipt-view-overlay').classList.remove('hidden');
+
+  let img = st.receiptImage || null;               /* eski yozuvlarda hujjat ichida */
+  if(!img && window.loadReceipt) img = await window.loadReceipt(st.id);
+
+  if(!img){
+    body.innerHTML = `<span style="color:var(--brick);font-size:13px;">Chek topilmadi. Qaytadan yuklab ko'ring.</span>`;
+    return;
+  }
+  currentReceiptDataUrl = img;
+  body.innerHTML = `<img src="${img}" alt="To'lov cheki" style="max-width:100%;border-radius:var(--radius-sm);display:block;">`;
+}
+function closeReceiptViewer(){ document.getElementById('receipt-view-overlay').classList.add('hidden'); }
+
 function showDuplicateBlocked(res){
   const i = res.info || {};
   document.getElementById('dup-matched-by').textContent = 'Mos kelgan maydon: ' + (res.field || '—');
@@ -2557,6 +2589,42 @@ function closeStudentView(){
   document.getElementById('view-overlay').classList.add('hidden');
 }
 document.getElementById('view-close').addEventListener('click', closeStudentView);
+document.getElementById('receipt-view-close').addEventListener('click', closeReceiptViewer);
+document.getElementById('receipt-view-overlay').addEventListener('click', (e)=>{ if(e.target.id==='receipt-view-overlay') closeReceiptViewer(); });
+document.getElementById('receipt-view-open').addEventListener('click', ()=>{
+  /* Bu yerda window.open foydalanuvchi bosishiga to'g'ridan-to'g'ri bog'liq —
+     rasm allaqachon yuklangan, shuning uchun bloklanmaydi. */
+  if(!currentReceiptDataUrl){ showToast("Chek hali yuklanmadi", 'error'); return; }
+  const w = window.open('', '_blank');
+  if(!w){ showToast("Brauzer yangi oynani bloklab qo'ydi", 'error'); return; }
+  w.document.write(`<title>To'lov cheki</title><body style="margin:0;background:#0B0F19;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="${currentReceiptDataUrl}" style="max-width:100%;max-height:100vh;"></body>`);
+});
+document.getElementById('receipt-view-delete').addEventListener('click', async ()=>{
+  if(!currentReceiptStudentId) return;
+  const st = students.find(s=>s.id===currentReceiptStudentId);
+  if(!confirm(`"${st ? (st.name||'') : ''}" talabasining to'lov cheki o'chirilsinmi?\n\nKeyin yangisini yuklashingiz mumkin.`)) return;
+  const btn = document.getElementById('receipt-view-delete');
+  const lbl = btn.textContent; btn.disabled = true; btn.textContent = "O'chirilmoqda...";
+  try{
+    if(window.deleteReceipt) await window.deleteReceipt(currentReceiptStudentId);
+    if(st){ st.hasReceipt = false; delete st.receiptImage; await persist(); }
+    if(window.auditLog) window.auditLog('receipt_deleted', { studentId: currentReceiptStudentId });
+    closeReceiptViewer();
+    render();
+    showToast("Chek o'chirildi", 'success');
+  }catch(err){
+    console.error(err);
+    showToast("Chekni o'chirishda xatolik: " + err.message, 'error');
+  }finally{
+    btn.disabled = false; btn.textContent = lbl;
+  }
+});
+document.getElementById('receipt-view-replace').addEventListener('click', ()=>{
+  if(!currentReceiptStudentId) return;
+  pendingReceiptId = currentReceiptStudentId;
+  closeReceiptViewer();
+  document.getElementById('receipt-file-input').click();
+});
 document.getElementById('dup-close').addEventListener('click', closeDuplicateModal);
 document.getElementById('dup-close-btn').addEventListener('click', closeDuplicateModal);
 document.getElementById('dup-overlay').addEventListener('click', (e)=>{ if(e.target.id==='dup-overlay') closeDuplicateModal(); });
@@ -2656,9 +2724,23 @@ async function saveStudent(){
     }catch(e){ console.warn('Dublikat tekshiruvi bajarilmadi:', e.message); dupRes = { blocked:false }; }
 
     if(dupRes.blocked){
-      showDuplicateBlocked(dupRes);
-      if(window.auditLog) window.auditLog('duplicate_attempt', { field: dupRes.field, name });
-      return;
+      if(window.currentRole === 'admin'){
+        /* Admin (supervisor) uchun dublikat to'siq emas — ogohlantirish.
+           U mavjud yozuvni ham, yangisini ham boshqara oladi. */
+        const i = dupRes.info || {};
+        const ok = confirm(
+          `Diqqat: bu ${dupRes.field} allaqachon band.\n\n`
+          + `Talaba: ${i.name || '—'}\n`
+          + `Mas'ul xodim: ${i.ownerName || '—'}\n`
+          + `Shartnoma: ${i.contractNumber || '—'}\n\n`
+          + `Administrator sifatida baribir saqlashingiz mumkin. Davom etasizmi?`);
+        if(window.auditLog) window.auditLog('duplicate_override_admin', { field: dupRes.field, name, accepted: ok });
+        if(!ok) return;
+      }else{
+        showDuplicateBlocked(dupRes);
+        if(window.auditLog) window.auditLog('duplicate_attempt', { field: dupRes.field, name });
+        return;
+      }
     }
     if(dupRes.warning){
       const ok = confirm(`Diqqat: "${dupRes.info.name}" ismli talaba allaqachon ro'yxatda `
@@ -3441,14 +3523,20 @@ document.getElementById('receipt-file-input').addEventListener('change', async (
   if(!file || !targetId) return;
   try{
     /* Bosqichma-bosqich siqamiz — natija hujjat chegarasiga sig'ishi kafolatlansin */
+    /* Maksimal siqish: ~200 KB gacha tushirishga harakat qilamiz. Chek matni
+       o'qilishi kerak, shuning uchun cheksiz siqib bo'lmaydi — quyidagi zinapoya
+       o'qilishni saqlagan holda eng kichik hajmni tanlaydi. */
+    const TARGET = 200*1024, HARD_CAP = 700*1024;
     let compressed = null;
-    for(const [w,q] of [[1000,0.72],[850,0.6],[700,0.5],[560,0.42]]){
+    for(const [w,q] of [[900,0.6],[800,0.5],[700,0.42],[600,0.36],[500,0.3]]){
       compressed = await compressReceiptImage(file, w, q);
-      if(compressed.length <= 700*1024) break;
+      if(compressed.length <= TARGET) break;
     }
-    if(compressed.length > 700*1024){
-      showToast("Rasm juda katta — kichikroq surat tanlang", 'error'); e.target.value=''; return;
+    if(compressed.length > HARD_CAP){
+      showToast("Rasm juda katta — kichikroq yoki sifatliroq qirqilgan surat tanlang", 'error');
+      e.target.value=''; return;
     }
+    const kb = Math.round(compressed.length/1024);
     const target = students.find(s=>s.id===targetId);
     if(target){
       showToast("Chek yuklanmoqda...", 'info');
@@ -3955,7 +4043,9 @@ window.persist = async function(){
   }catch(e){
     console.error('Saqlashda xatolik', e);
     if(String(e.code||'').includes('permission-denied')){
-      showToast("Saqlab bo'lmadi: bu ma'lumot (shartnoma/pasport/telefon) allaqachon band yoki sizda ruxsat yo'q.", 'error');
+      showToast(window.currentRole === 'admin'
+        ? "Saqlab bo'lmadi. Firestore qoidalari eskirgan bo'lishi mumkin — yangi firestore.rules ni Publish qiling."
+        : "Saqlab bo'lmadi: bu shartnoma/pasport/telefon boshqa xodimda band.", 'error');
       await window.auditLog('duplicate_attempt_blocked', {});
     }else{
       showToast("Saqlashda xatolik: " + e.message, 'error');

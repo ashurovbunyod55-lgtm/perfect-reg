@@ -775,6 +775,18 @@
     animation:bulkBarIn .22s var(--ease);max-width:min(94vw,760px);
   }
   @keyframes bulkBarIn{from{opacity:0;transform:translate(-50%,14px);}to{opacity:1;transform:translate(-50%,0);}}
+  .scope-badge{
+    display:inline-flex;align-items:center;gap:8px;margin:-8px 0 18px;
+    padding:7px 14px;border-radius:999px;font-size:12.5px;font-weight:500;
+    background:var(--primary-bg);border:1px solid rgba(124,108,251,.28);color:var(--ink);
+  }
+  .scope-badge b{color:var(--navy-soft);font-weight:700;}
+  .scope-badge svg{width:14px;height:14px;color:var(--navy-soft);flex-shrink:0;}
+  .scope-badge button{
+    background:none;border:none;color:var(--ink-soft);font-size:11.5px;
+    cursor:pointer;font-family:var(--font-body);text-decoration:underline;padding:0 0 0 4px;
+  }
+  .scope-badge button:hover{color:var(--ink);}
   .bulk-count{
     font-size:13px;font-weight:700;color:var(--navy-soft);white-space:nowrap;
     background:var(--primary-bg);padding:5px 12px;border-radius:999px;
@@ -1014,6 +1026,7 @@
     <div id="view-reports" style="display:none;">
       <h1 class="page-title">Hisobotlar</h1>
       <p class="page-sub">Shaxsiy qayd daftarchasi — kunlik faoliyat va oylik konversiya.</p>
+      <div class="scope-badge admin-only" id="scope-reports" style="display:none;"></div>
 
       <div class="table-wrap home-card" style="margin-bottom:18px;">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
@@ -1036,6 +1049,7 @@
     <div id="view-paid" style="display:none;">
       <h1 class="page-title">To'langanlar</h1>
       <p class="page-sub">To'lovni yakunlagan (Yakuniy status: To'langan) talabalar ro'yxati va statistikasi.</p>
+      <div class="scope-badge admin-only" id="scope-paid" style="display:none;"></div>
 
       <div class="stats" id="stats-strip-paid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px;"></div>
       <div class="table-wrap">
@@ -1058,6 +1072,7 @@
     <div id="view-list" style="display:none;">
       <h1 class="page-title" id="list-page-title">Talabalar ro'yxati</h1>
       <p class="page-sub" id="list-page-sub">Barcha kerakli ma'lumotlari to'liq kiritilgan, faol talabalar.</p>
+      <div class="scope-badge admin-only" id="scope-list" style="display:none;"></div>
 
 
       <div class="toolbar">
@@ -1137,6 +1152,7 @@
     <div id="view-stats" style="display:none;">
       <h1 class="page-title">Statistika</h1>
       <p class="page-sub">Umumiy ko'rsatkichlar va to'lov taqsimoti.</p>
+      <div class="scope-badge admin-only" id="scope-stats" style="display:none;"></div>
       <div class="table-wrap" style="padding:20px;">
         <div id="bars"></div>
       </div>
@@ -1936,6 +1952,33 @@ function sortList(list){
    bitta operatorga o'tkazadi. */
 let bulkSelected = new Set();
 
+/* Admin xodim bo'yicha filtr qo'yganda, u BARCHA sahifalarga ta'sir qiladi
+   (hisobot, statistika, to'langanlar, ro'yxat). Avval buni faqat bosh sahifada
+   ko'rish mumkin edi — boshqa sahifada kimning ma'lumoti ekani noma'lum qolardi. */
+function updateScopeBadges(){
+  const isAdmin = window.currentRole === 'admin';
+  const email = window.selectedAgentFilter || '';
+  const person = email ? (window.allStaff||[]).find(s=>s.email===email) : null;
+  const label = person ? (person.name || email) : 'Barcha xodimlar';
+  const icon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>`;
+  const html = `${icon}<span>Ko'rsatilmoqda: <b>${esc(label)}</b></span>`
+    + (email ? `<button type="button" data-scope-clear="1">Barchasini ko'rsatish</button>` : '');
+  ['scope-list','scope-paid','scope-reports','scope-stats'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.style.display = isAdmin ? 'inline-flex' : 'none';
+    if(isAdmin){
+      el.innerHTML = html;
+      const btn = el.querySelector('[data-scope-clear]');
+      if(btn) btn.addEventListener('click', ()=>{
+        const sel = document.getElementById('supervisor-agent-select');
+        if(sel) sel.value = '';
+        if(window.setAgentFilter) window.setAgentFilter('');
+      });
+    }
+  });
+}
+
 function renderBulkBar(){
   const bar = document.getElementById('bulk-bar');
   const isAdmin = window.currentRole === 'admin';
@@ -2499,6 +2542,7 @@ function checkOverdueTransitions(){
 
 function render(){
   checkOverdueTransitions();
+  updateScopeBadges();
   renderFilters();
   renderTable();
   renderBars();

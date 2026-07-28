@@ -2835,12 +2835,14 @@ async function saveStudent(){
      va ikki operator bir vaqtda urinsa ham faqat birinchisini o'tkazadi. */
   if(window.checkDuplicate){
     let dupRes;
+    showLoader("Tekshirilmoqda...", "Shartnoma, pasport va telefon bazadan qidirilmoqda");
     try{
       dupRes = await window.checkDuplicate({
         contractNumber: contractNumberVal, passport: passportVal,
         phone: phoneVal, name, excludeId: editingId
       });
     }catch(e){ console.warn('Dublikat tekshiruvi bajarilmadi:', e.message); dupRes = { blocked:false }; }
+    finally{ hideLoader(true); }   /* dialog ochilishidan oldin albatta yopamiz */
 
     if(dupRes.blocked){
       if(window.currentRole === 'admin'){
@@ -2932,12 +2934,22 @@ async function saveStudent(){
     data.activityLog.push({ts:Date.now(), text:`To'lov kiritildi: ${fmt(newPaymentAmt)} so'm`});
   }
   const wasEditing = !!editingId;
+  const prevSnapshot = students.slice();     /* xatolik bo'lsa qaytarish uchun */
   if(editingId){
     students = students.map(s=>s.id===editingId?data:s);
   }else{
     students.push(data);
   }
-  await persist();
+  showLoader(wasEditing ? "O'zgarishlar saqlanmoqda..." : "Talaba qo'shilmoqda...", esc(name));
+  try{
+    await persist();
+  }catch(err){
+    students = prevSnapshot;                 /* mahalliy ro'yxatni tiklaymiz */
+    render();
+    return;                                  /* xabar persist() ichida ko'rsatilgan */
+  }finally{
+    hideLoader(true);
+  }
   closeDrawer();
   render();
   showToast(wasEditing ? "Talaba ma'lumotlari yangilandi" : "Talaba qo'shildi", 'success');
@@ -3003,7 +3015,13 @@ document.getElementById('receipt-copy-btn').addEventListener('click', async ()=>
 document.getElementById('add-btn').addEventListener('click', ()=>openDrawer(null));
 document.getElementById('close-drawer').addEventListener('click', closeDrawer);
 document.getElementById('overlay').addEventListener('click', (e)=>{ if(e.target.id==='overlay') closeDrawer(); });
-document.getElementById('save-btn').addEventListener('click', saveStudent);
+document.getElementById('save-btn').addEventListener('click', async ()=>{
+  const btn = document.getElementById('save-btn');
+  const lbl = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Saqlanmoqda...';
+  try{ await saveStudent(); }
+  finally{ btn.disabled = false; btn.textContent = lbl; }
+});
 document.getElementById('delete-btn').addEventListener('click', async ()=>{
   if(editingId && confirm("Bu talabani o'chirmoqchimisiz?")){
     students = students.filter(s=>s.id!==editingId);

@@ -2962,7 +2962,12 @@ async function saveStudent(){
 }
 
 /* ===== To'lov cheki matni ===== */
-const RECEIPT_ISSUER_NAME = "Bunyod Ashurov"; /* kerak bo'lsa shu ismni o'zgartiring */
+/* "Kim to'latgani" maydoni endi qattiq yozilgan ism emas — chekni kim
+   yaratayotgan bo'lsa (hozir tizimga kirgan xodim), aynan o'sha ko'rsatiladi.
+   Har bir operator o'z chekida o'z ismini ko'radi. */
+function receiptIssuerName(){
+  return window.currentStaffName || 'Kontrakt bo\'limi';
+}
 
 function splitName(fullName){
   const parts = (fullName||'').trim().split(/\s+/).filter(Boolean);
@@ -2986,7 +2991,7 @@ function generateReceiptText(st, paymentAmount, dateStr){
     `Shartnoma raqami: ${esc(st.contractNumber||'')}`,
     ``,
     `To'lov sana: ${dateStr}`,
-    `Kim to'latgani: ${RECEIPT_ISSUER_NAME}`
+    `Kim to'latgani: ${esc(receiptIssuerName())}`
   ].join('\n');
 }
 

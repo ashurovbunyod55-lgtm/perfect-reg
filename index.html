@@ -2901,22 +2901,44 @@ async function saveStudent(){
       : (existing?.agentEmail || (window.getCurrentUserEmail ? window.getCurrentUserEmail() : ''))
   };
 
-  /* ===== Egalikni o'tkazish (faqat admin) =====
-     Avval forma faqat agentEmail ni o'zgartirardi, haqiqiy egalik esa ownerId
-     orqali aniqlanadi — shuning uchun o'tkazish amalda bajarilmasdi. Endi
-     tanlangan xodimning uid/name/email maydonlari ham to'liq yoziladi. */
-  if(window.currentRole === 'admin' && existing){
+  /* ===== Mas'ul xodimni belgilash (faqat admin) =====
+     Chek matni ("Kim to'latgani") mahalliy `data` obyektidan to'g'ridan-to'g'ri
+     tuziladi — serverga yozilib qaytib kelishini kutmaydi. Shuning uchun
+     ownerId/ownerName/ownerEmail har doim shu yerda, to'liq va izchil
+     belgilanadi (faqat agentEmail emas) — aks holda ikkita muammo chiqardi:
+       1) admin boshqa xodimning talabasini (egalikni o'zgartirmasdan)
+          tahrirlasa, chekda noto'g'ri ism chiqardi;
+       2) admin YANGI talabani boshqa xodimga to'g'ridan-to'g'ri biriktirsa,
+          agentEmail to'g'ri bo'lsa-da, ownerId baribir adminning o'ziga
+          tushib qolardi (Firestore qoidalari esa aynan ownerId'ga qaraydi).
+     Yangi yozuvda tasdiqlash so'ralmaydi — hali "avvalgi ega"dan olib
+     qo'yish yo'q. Mavjud yozuvda esa, ega haqiqatan almashtirilsagina
+     tasdiqlash chiqadi. */
+  if(existing){
+    data.ownerId    = existing.ownerId;
+    data.ownerEmail = existing.ownerEmail || existing.agentEmail;
+    data.ownerName  = existing.ownerName;
+  }
+  if(window.currentRole === 'admin'){
     const pickedEmail = document.getElementById('f-agent').value;
-    const picked = (window.allStaff||[]).find(s=>s.email === pickedEmail);
-    const prevOwnerEmail = existing.ownerEmail || existing.agentEmail || '';
-    if(picked && pickedEmail && pickedEmail !== prevOwnerEmail){
-      const prevName = (window.allStaff||[]).find(s=>s.email===prevOwnerEmail)?.name || prevOwnerEmail || 'noma\'lum';
-      const ok = confirm(`"${name}" talabasi\n\n${prevName}  →  ${picked.name}\n\nga o'tkazilsinmi?`);
-      if(!ok) return;
-      data.ownerId    = picked.uid;
-      data.ownerEmail = picked.email;
-      data.ownerName  = picked.name;
-      data.agentEmail = picked.email;
+    const picked = pickedEmail ? (window.allStaff||[]).find(s=>s.email === pickedEmail) : null;
+
+    if(!existing){
+      if(picked){
+        data.ownerId = picked.uid; data.ownerEmail = picked.email;
+        data.ownerName = picked.name; data.agentEmail = picked.email;
+      }
+    }else{
+      const prevOwnerEmail = existing.ownerEmail || existing.agentEmail || '';
+      if(picked && pickedEmail && pickedEmail !== prevOwnerEmail){
+        const prevName = (window.allStaff||[]).find(s=>s.email===prevOwnerEmail)?.name || prevOwnerEmail || 'noma\'lum';
+        const ok = confirm(`"${name}" talabasi\n\n${prevName}  →  ${picked.name}\n\nga o'tkazilsinmi?`);
+        if(!ok) return;
+        data.ownerId    = picked.uid;
+        data.ownerEmail = picked.email;
+        data.ownerName  = picked.name;
+        data.agentEmail = picked.email;
+      }
     }
   }
   /* ===== Faoliyat tarixi (activity log) ===== */
@@ -2962,11 +2984,13 @@ async function saveStudent(){
 }
 
 /* ===== To'lov cheki matni ===== */
-/* "Kim to'latgani" maydoni endi qattiq yozilgan ism emas — chekni kim
-   yaratayotgan bo'lsa (hozir tizimga kirgan xodim), aynan o'sha ko'rsatiladi.
-   Har bir operator o'z chekida o'z ismini ko'radi. */
-function receiptIssuerName(){
-  return window.currentStaffName || 'Kontrakt bo\'limi';
+/* "Kim to'latgani" maydoni — talabaning HAQIQIY mas'ul xodimi ko'rsatiladi
+   (ownerName), chekni kim yaratayotganidan qat'i nazar. Sabab: agar admin
+   Botirjonning talabasiga to'lov kiritsa, chekda "Botirjon" chiqishi kerak —
+   real hayotda pulni aynan o'sha qabul qilgan, admin emas. Faqat juda eski,
+   hali egasi belgilanmagan yozuvlarda hozirgi foydalanuvchi nomiga tushadi. */
+function receiptIssuerName(st){
+  return (st && st.ownerName) || window.currentStaffName || 'Kontrakt bo\'limi';
 }
 
 function splitName(fullName){
@@ -2991,7 +3015,7 @@ function generateReceiptText(st, paymentAmount, dateStr){
     `Shartnoma raqami: ${esc(st.contractNumber||'')}`,
     ``,
     `To'lov sana: ${dateStr}`,
-    `Kim to'latgani: ${esc(receiptIssuerName())}`
+    `Kim to'latgani: ${esc(receiptIssuerName(st))}`
   ].join('\n');
 }
 

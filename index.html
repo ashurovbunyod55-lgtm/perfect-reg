@@ -2570,19 +2570,45 @@ async function openReceiptViewer(st){
   currentReceiptStudentId = st.id;
   currentReceiptDataUrl = null;
   document.getElementById('receipt-view-title').textContent = "To'lov cheki — " + (st.name || '');
+  document.getElementById('receipt-view-overlay').classList.remove('hidden');
+  await fetchAndRenderReceipt(st);
+}
+
+/* Har qanday sabab bilan (tarmoq, ruxsat, ko'p oyna koordinatsiyasi) o'qish
+   osilib qolsa ham, interfeys abadiy "Yuklanmoqda..." holida qolmasligi
+   uchun qattiq vaqt chegarasi. Muvaffaqiyatsiz bo'lsa — aniq xabar va
+   "Qayta urinish" tugmasi chiqadi, drawer'ni yopib-ochish shart emas. */
+async function fetchAndRenderReceipt(st){
   const body = document.getElementById('receipt-view-body');
   body.innerHTML = `<span style="color:var(--ink-soft);font-size:13px;">Yuklanmoqda...</span>`;
-  document.getElementById('receipt-view-overlay').classList.remove('hidden');
 
-  let img = st.receiptImage || null;               /* eski yozuvlarda hujjat ichida */
-  if(!img && window.loadReceipt) img = await window.loadReceipt(st.id);
-
-  if(!img){
-    body.innerHTML = `<span style="color:var(--brick);font-size:13px;">Chek topilmadi. Qaytadan yuklab ko'ring.</span>`;
-    return;
+  let img = st.receiptImage || null;   /* eski yozuvlarda hujjat ichida */
+  if(!img && window.loadReceipt){
+    try{
+      img = await Promise.race([
+        window.loadReceipt(st.id),
+        new Promise((_, rej) => setTimeout(() => rej(new Error('TIMEOUT')), 9000))
+      ]);
+    }catch(e){
+      renderReceiptRetry(st, e && e.message === 'TIMEOUT'
+        ? "Yuklash juda uzoq davom etdi — internet aloqasini tekshiring."
+        : "Chekni yuklashda xatolik yuz berdi.");
+      return;
+    }
   }
+  if(!img){ renderReceiptRetry(st, "Chek topilmadi."); return; }
+
   currentReceiptDataUrl = img;
   body.innerHTML = `<img src="${img}" alt="To'lov cheki" style="max-width:100%;border-radius:var(--radius-sm);display:block;">`;
+}
+function renderReceiptRetry(st, message){
+  const body = document.getElementById('receipt-view-body');
+  body.innerHTML = `
+    <div style="text-align:center;">
+      <span style="color:var(--brick);font-size:13px;display:block;margin-bottom:12px;">${esc(message)}</span>
+      <button class="btn-secondary" id="receipt-view-retry-btn" type="button">Qayta urinish</button>
+    </div>`;
+  document.getElementById('receipt-view-retry-btn').addEventListener('click', ()=> fetchAndRenderReceipt(st));
 }
 function closeReceiptViewer(){ document.getElementById('receipt-view-overlay').classList.add('hidden'); }
 
@@ -2962,7 +2988,7 @@ async function saveStudent(){
   }else{
     students.push(data);
   }
-  showLoader(wasEditing ? "O'zgarishlar saqlanmoqda..." : "Talaba qo'shilmoqda...", esc(name));
+  showLoader(wasEditing ? "O'zgarishlar saqlanmoqda..." : "Talaba qo'shilmoqda...", name);
   try{
     await persist();
   }catch(err){
@@ -2999,23 +3025,27 @@ function splitName(fullName){
 }
 
 function generateReceiptText(st, paymentAmount, dateStr){
+  /* Bu matn <textarea>.value ga yoziladi — sof matn, HTML emas. Brauzer bu
+     yerda &#39; kabi belgilarni apostrofga aylantirmaydi, harfma-harf
+     ko'rsatadi. Shuning uchun bu yerda esc() ISHLATILMAYDI — u faqat
+     innerHTML orqali chiqariladigan joylar uchun kerak (masalan jadval). */
   const { familiya, ismi } = splitName(st.name);
   return [
     `Ismi: ${ismi}`,
     `Familiya: ${familiya}`,
-    `Raqami: ${esc(st.phone||'')}`,
-    `Ota yoki ona raqami: ${esc(st.parentPhone||'')}`,
-    `Manzili: ${esc(st.address||'')}`,
+    `Raqami: ${st.phone||''}`,
+    `Ota yoki ona raqami: ${st.parentPhone||''}`,
+    `Manzili: ${st.address||''}`,
     `Passport: ${formatPassportDisplay(st.passport)}`,
-    `Yo'nalish: ${esc(st.direction||'')}`,
+    `Yo'nalish: ${st.direction||''}`,
     `Mutaxassisligi: ${degreeLabel(st.degreeStage)}`,
     `Ta'lim shakli: ${formLabel(st.studyForm)}`,
     `To'lov summasi: ${fmt(Number(st.contractTotal)||0)} so'm`,
     `To'langan summa: ${fmt(paymentAmount)} so'm`,
-    `Shartnoma raqami: ${esc(st.contractNumber||'')}`,
+    `Shartnoma raqami: ${st.contractNumber||''}`,
     ``,
     `To'lov sana: ${dateStr}`,
-    `Kim to'latgani: ${esc(receiptIssuerName(st))}`
+    `Kim to'latgani: ${receiptIssuerName(st)}`
   ].join('\n');
 }
 
@@ -3081,8 +3111,16 @@ document.getElementById('bulk-apply').addEventListener('click', async ()=>{
   const btn = document.getElementById('bulk-apply');
   const lbl = btn.textContent; btn.disabled = true; btn.textContent = "O'tkazilmoqda...";
   showLoader("Talabalar o'tkazilmoqda...", `${ids.length} ta yozuv → ${staffName}`);
-  const r = await window.bulkTransferOwnership(ids, email);
-  hideLoader();
+  let r;
+  try{
+    r = await window.bulkTransferOwnership(ids, email);
+  }catch(err){
+    hideLoader(true);
+    btn.disabled = false; btn.textContent = lbl;
+    showToast("O'tkazishda kutilmagan xatolik: " + err.message, 'error');
+    return;
+  }
+  hideLoader(true);
   btn.disabled = false; btn.textContent = lbl;
   if(r.success){
     showToast(`${r.moved} ta talaba "${staffName}" ga o'tkazildi` + (r.failed ? `, ${r.failed} tasi o'tmadi` : ''),
@@ -3704,29 +3742,44 @@ document.getElementById('receipt-file-input').addEventListener('change', async (
       showToast("Rasm juda katta — kichikroq yoki sifatliroq qirqilgan surat tanlang", 'error');
       e.target.value=''; return;
     }
-    const kb = Math.round(compressed.length/1024);
-    const target = students.find(s=>s.id===targetId);
-    if(target){
-      showLoader("Chek yuklanmoqda...", `${kb} KB`);
-      if(window.uploadReceipt){
-        const up = await window.uploadReceipt(targetId, compressed);
-        if(!up.success){ hideLoader(true); showToast("Chekni yuklab bo'lmadi: " + up.error, 'error'); e.target.value=''; return; }
-        /* Talaba hujjatida faqat bayroq — rasmning o'zi alohida hujjatda */
-        target.hasReceipt = true;
-        delete target.receiptImage;
-      }else{
-        target.receiptImage = compressed;
-      }
-      await persist();
-      render();
-      showToast("To'lov cheki yuklandi", 'success');
-    }
+    await finishReceiptUpload(targetId, compressed);
   }catch(err){
     console.error(err);
     showToast("Chekni yuklashda xatolik yuz berdi", 'error');
   }
   e.target.value = '';
 });
+
+/* Siqilgan rasmni saqlash — event handlerdan ajratilgan, shunda bevosita
+   sinovdan o'tkazish mumkin (jsdom'da Canvas/Image ishlamaydi, lekin bu
+   qism ularga bog'liq emas). Markaziy "Yuklanmoqda..." oynasi bu yerda
+   ATAY ishlatilmaydi — yakunda "To'lov cheki yuklandi" degan aniq xabar
+   allaqachon yetarli, qo'shimcha ekran ortiqcha qadam bo'lardi. */
+async function finishReceiptUpload(targetId, compressed){
+  const kb = Math.round(compressed.length/1024);
+  if(!students.find(s=>s.id===targetId)) return;
+  if(window.uploadReceipt){
+    const up = await window.uploadReceipt(targetId, compressed);
+    if(!up.success){ showToast("Chekni yuklab bo'lmadi: " + up.error, 'error'); return; }
+    /* `students` massivi yuqoridagi await davomida real vaqtli yangilanish
+       bilan qayta almashtirilgan bo'lishi mumkin — shuning uchun `target`ni
+       ENDI qayta topamiz, await'dan oldingi (potentsial "yetim" qolgan)
+       havolaga tayanmaymiz. Aks holda hasReceipt bayrog'i saqlanmay qolardi. */
+    const freshTarget = students.find(s=>s.id===targetId);
+    if(freshTarget){
+      freshTarget.hasReceipt = true;
+      delete freshTarget.receiptImage;
+    }
+  }else{
+    const freshTarget = students.find(s=>s.id===targetId);
+    if(freshTarget) freshTarget.receiptImage = compressed;
+  }
+  await persist();
+  render();
+  showToast(`To'lov cheki yuklandi (${kb} KB)`, 'success');
+}
+window.finishReceiptUpload = finishReceiptUpload;
+
 
 /* ===== Hisobotlar sanasi/oyi ===== */
 (function initReportInputs(){
@@ -3814,9 +3867,15 @@ document.getElementById('migrate-btn').addEventListener('click', async ()=>{
   const btn = document.getElementById('migrate-btn');
   const lbl = btn.innerHTML; btn.disabled = true; btn.textContent = "Ko'chirilmoqda...";
   showLoader("Eski ma'lumotlar ko'chirilmoqda...", "Bu bir necha soniya davom etishi mumkin");
-  await window.migrateOldData(true);
-  hideLoader();
-  btn.disabled = false; btn.innerHTML = lbl;
+  try{
+    await window.migrateOldData(true);
+  }catch(err){
+    console.error(err);
+    showToast("Ko'chirishda kutilmagan xatolik: " + err.message, 'error');
+  }finally{
+    hideLoader(true);
+    btn.disabled = false; btn.innerHTML = lbl;
+  }
   renderEmployeesPage();
 });
 
@@ -3867,8 +3926,16 @@ document.getElementById('staff-save-btn').addEventListener('click', async ()=>{
   const originalLabel = btn.textContent;
   btn.disabled = true; btn.textContent = "Qo'shilmoqda...";
   showLoader("Xodim qo'shilmoqda...", email);
-  const result = await window.createStaffAccount(email, password, name);
-  hideLoader();
+  let result;
+  try{
+    result = await window.createStaffAccount(email, password, name);
+  }catch(err){
+    hideLoader(true);
+    btn.disabled = false; btn.textContent = originalLabel;
+    errEl.textContent = "Kutilmagan xatolik: " + err.message;
+    return;
+  }
+  hideLoader(true);
   btn.disabled = false; btn.textContent = originalLabel;
   if(result.success){
     showToast("Xodim muvaffaqiyatli qo'shildi", 'success');
@@ -3950,7 +4017,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import {
   getFirestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
-  doc, getDoc, setDoc, deleteDoc, collection, query, where,
+  doc, getDoc, getDocFromServer, setDoc, deleteDoc, collection, query, where,
   onSnapshot, getDocs, writeBatch, serverTimestamp, orderBy, limit
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
@@ -4322,10 +4389,23 @@ window.uploadReceipt = async function(studentId, dataUrl){
 };
 
 window.loadReceipt = async function(studentId){
+  /* Avval to'g'ridan-to'g'ri SERVERDAN o'qishga harakat qilamiz (mahalliy
+     kesh/ko'p-oyna koordinatsiyasini chetlab o'tib) — bir nechta oyna ochiq
+     bo'lganda kesh qulflanishi tufayli o'qish abadiy osilib qolishi mumkin
+     edi. Server javob bermasa, keshdan (agar bor bo'lsa) o'qib ko'ramiz. */
   try{
-    const s = await getDoc(doc(db,'receipts',studentId));
+    const s = await getDocFromServer(doc(db,'receipts',studentId));
     return s.exists() ? s.data().image : null;
-  }catch(e){ console.error('Chekni o\'qishda xatolik', e); return null; }
+  }catch(e){
+    console.warn('Serverdan o\'qib bo\'lmadi, keshdan urinilmoqda:', e.message);
+    try{
+      const s = await getDoc(doc(db,'receipts',studentId));
+      return s.exists() ? s.data().image : null;
+    }catch(e2){
+      console.error('Chekni o\'qishda xatolik', e2);
+      throw e2;   /* chaqiruvchi (openReceiptViewer) buni ko'rsatishi uchun */
+    }
+  }
 };
 
 window.deleteReceipt = async function(studentId){
